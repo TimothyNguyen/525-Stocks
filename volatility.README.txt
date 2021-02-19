@@ -1,0 +1,33 @@
+Volatility	
+
+Description
+
+This dataset contains 503 measurements of the volatility of Apple stock returns over the next 30 days from January 1, 2018 to January 1, 2020, as well as closing prices, returns, the projected 30-day volatility, and past 30-day volatility of Apple stocks, related stocks, and the S&P 500 index. The goal of this project is to explore how the observed volatility of Apple stock returns over the next 30 days is correlated with these measures of past and projected stock performance.
+
+Source
+The data were downloaded from FRED and Yahoo using the “quantmod” package for R, https://www.quantmod.com.
+
+The data set contains the following columns:
+  	Variable 	  	Description
+	Date			Number of days since January 1, 2018
+	AAPL.Vol		Volatility (standard deviation) of Apple log returns over the next 30 days
+	AAPL.Close		Apple closing price
+	GOOG.Close		Google closing price
+	AMZN.Close		Amazon closing price
+	GSPC.Close		S&P 500 closing price
+	AAPL.Ret		Apple log return
+	AMZN.Ret		Amazon log return
+	GOOG.Ret		Google log return
+	GSPC.Ret		S&P 500 log return
+	AAPL.PVol		Volatility (standard deviation) of Apple log returns over the previous 30 days, including the current day
+	AMZN.PVol		Volatility (standard deviation) of Amazon log returns over the previous 30 days, including the current day
+	GOOG.PVol		Volatility (standard deviation) of Google log returns over the previous 30 days, including the current day
+	GSPC.PVol		Volatility (standard deviation) of S&P 500 log returns over the previous 30 days, including the current day
+ 	VIX.Close		VIX (CBOE Volatility Index, https://fred.stlouisfed.org/series/VIXCLS)
+	VXAPLCLS		VIX (CBOE Equity VIX on Apple, https://fred.stlouisfed.org/series/VXAPLCLS)
+	VXAZNCLS		VIX (CBOE Equity VIX on Amazon, https://fred.stlouisfed.org/series/VXAZNCLS)
+	VXGOGCLS		VIX (CBOE Equity VIX on Google, https://fred.stlouisfed.org/series/VXGOGCLS)      
+
+  
+      
+
