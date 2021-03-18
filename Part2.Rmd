@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r}
@@ -33,14 +35,14 @@ AAPL.Vol = df$AAPL.Vol
 cov(cbind(AAPL.PVol,GOOG.PVol,AMZN.PVol,GSPC.PVol))
 ```
 
-**Looking at correlation between variables**
+## **Looking at correlation between variables**
 
 ```{r}
 x = cbind(AAPL.PVol,GOOG.PVol,AMZN.PVol,GSPC.PVol)
 cor(x, method = c("pearson"))
 ```
 
-**Descriptive Statistics:**
+## **Descriptive Statistics:**
 
 ```{r}
 # Getting descriptive statistics
@@ -50,7 +52,7 @@ summary(AMZN.PVol)
 summary(GSPC.PVol)
 ```
 
-1.  **Looking at Apple.Volatility vs Apple.PVolatility**
+## **Looking at Apple.Volatility vs Apple.PVolatility**
 
 ```{r}
 # Fitting a simple linear regression model for AAPL.Vol and 
@@ -70,7 +72,7 @@ abline(lm(AAPL.Vol~AAPL.PVol))
 plot(lm(AAPL.Vol ~ AAPL.PVol))
 ```
 
-**Looking at Apple.Volatility vs Google.PVolatility**
+## **Looking at Apple.Volatility vs Google.PVolatility**
 
 ```{r}
 summary(lm(AAPL.Vol~GOOG.PVol))
@@ -85,16 +87,34 @@ abline(lm(AAPL.Vol~GOOG.PVol))
 plot(lm(AAPL.Vol~GOOG.PVol))
 ```
 
-**Looking at Apple.Volatility vs Amazon.PVolatility**
+## **Looking at Apple.Volatility vs Amazon.PVolatility**
 
 ```{r}
 summary(lm(AAPL.Vol~AMZN.PVol))
 ```
 
-**Looking at Apple.Volatility vs Apple.PVolatility**
+```{r}
+plot(lm(AAPL.Vol~AMZN.PVol))
+abline(AMZN.PVol, AAPL.Vol)
+```
+
+```{r}
+plot(lm(AAPL.Vol~AMZN.PVol))
+```
+
+## **Looking at Apple.Volatility vs Apple.PVolatility**
 
 ```{r}
 summary(lm(AAPL.Vol~GSPC.PVol))
+```
+
+```{r}
+plot(lm(AAPL.Vol~GSPC.PVol))
+abline(GSPC.PVol, AAPL.Vol)
+```
+
+```{r}
+AAPL.Vol~
 ```
 
 ```{r}
