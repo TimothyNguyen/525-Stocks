@@ -1,0 +1,102 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+rm(list=ls())
+df <- read.csv(file="./volatility.csv")
+head(df)
+
+
+AAPL.PVol = df$AAPL.PVol
+GOOG.PVol = df$GOOG.PVol
+AMZN.PVol = df$AMZN.PVol
+GSPC.PVol = df$GSPC.PVol
+VIX.Close = df$VIX.Close
+AAPL.Close = df$AAPL.Close
+VXAPLCLS = df$VXAPLCLS
+VXAZNCLS = df$VXAZNCLS
+VXGOGCLS = df$VXGOGCLS 
+GOOG.Close = df$GOOG.Close
+AMZN.Close = df$AMZN.Close
+GSPC.Close = df$GSPC.Close 
+Date = df$Date
+AAPL.Ret = df$AAPL.Ret
+AMZN.Ret = df$AMZN.Ret
+GOOG.Ret = df$GOOG.Ret
+GSPC.Ret = df$GSPC.Ret
+AAPL.Vol = df$AAPL.Vol
+```
+
+```{r}
+cov(cbind(AAPL.PVol,GOOG.PVol,AMZN.PVol,GSPC.PVol))
+```
+
+**Looking at correlation between variables**
+
+```{r}
+x = cbind(AAPL.PVol,GOOG.PVol,AMZN.PVol,GSPC.PVol)
+cor(x, method = c("pearson"))
+```
+
+**Descriptive Statistics:**
+
+```{r}
+# Getting descriptive statistics
+summary(AAPL.PVol)
+summary(GOOG.PVol)
+summary(AMZN.PVol)
+summary(GSPC.PVol)
+```
+
+1.  **Looking at Apple.Volatility vs Apple.PVolatility**
+
+```{r}
+# Fitting a simple linear regression model for AAPL.Vol and 
+# each independent variable, and checking the five key
+# assumptions: Linear relationship, Multivariate normality, 
+# No multicollinearity, No auto-correlation and Homoscedasticity, 
+# the assumptions of the simple linear regression are acceptable.
+summary(lm(AAPL.Vol~AAPL.PVol))
+```
+
+```{r}
+plot(AAPL.PVol,AAPL.Vol)
+abline(lm(AAPL.Vol~AAPL.PVol))
+```
+
+```{r}
+plot(lm(AAPL.Vol ~ AAPL.PVol))
+```
+
+**Looking at Apple.Volatility vs Google.PVolatility**
+
+```{r}
+summary(lm(AAPL.Vol~GOOG.PVol))
+```
+
+```{r}
+plot(GOOG.PVol, AAPL.Vol)
+abline(lm(AAPL.Vol~GOOG.PVol))
+```
+
+```{r}
+plot(lm(AAPL.Vol~GOOG.PVol))
+```
+
+**Looking at Apple.Volatility vs Amazon.PVolatility**
+
+```{r}
+summary(lm(AAPL.Vol~AMZN.PVol))
+```
+
+**Looking at Apple.Volatility vs Apple.PVolatility**
+
+```{r}
+summary(lm(AAPL.Vol~GSPC.PVol))
+```
+
+```{r}
+summary(lm(AAPL.Vol~AAPL.PVol+GOOG.PVol+AMZN.PVol+GSPC.PVol))
+```
