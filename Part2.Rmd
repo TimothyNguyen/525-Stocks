@@ -164,44 +164,63 @@ Looking just between scatterplot
 
 ##predicted volatilities
 plot(AAPL.Vol~AAPL.PVol)
-plot(AAPL.Vol~GOOG.PVol)
-plot(AAPL.Vol~AMZN.PVol)
-plot(AAPL.Vol~GSPC.PVol)
+abline(lm(AAPL.Vol~AAPL.PVol))
 
-
-##residuals
-##predictied volatilities
 plot(AAPL.PVol, resid(lm(AAPL.Vol~AAPL.PVol)))
+
+plot(AAPL.Vol~GOOG.PVol)
+abline(lm(AAPL.Vol~GOOG.PVol))
+
 plot(GOOG.PVol, lm(AAPL.Vol~GOOG.PVol)$residuals)
+
+
+plot(AAPL.Vol~AMZN.PVol)
+abline(lm(AAPL.Vol~AMZN.PVol))
+
 plot(AMZN.PVol, lm(AAPL.Vol~AMZN.PVol)$residuals)
+
+plot(AAPL.Vol~GSPC.PVol)
+abline(lm(AAPL.Vol~GSPC.PVol))
+
 plot(GSPC.PVol, lm(AAPL.Vol~GSPC.PVol)$residuals)
 ```
 
 ```{r}
 ##closing prices
 plot(AAPL.Vol~AAPL.Close)
-plot(AAPL.Vol~GOOG.Close)
-plot(AAPL.Vol~AMZN.Close)
-plot(AAPL.Vol~GSPC.Close)
-
-#closing
+abline(lm(AAPL.Vol~AAPL.Close))
 plot(AAPL.Close, lm(AAPL.Vol~AAPL.Close)$residuals)
+
+
+plot(AAPL.Vol~GOOG.Close)
+abline(lm(AAPL.Vol~GOOG.Close))
 plot(GOOG.Close, lm(AAPL.Vol~GOOG.Close)$residuals)
+
+plot(AAPL.Vol~AMZN.Close)
+abline(lm(AAPL.Vol~AMZN.Close))
 plot(AMZN.Close, lm(AAPL.Vol~AMZN.Close)$residuals)
+
+plot(AAPL.Vol~GSPC.Close)
+abline(lm(AAPL.Vol~GSPC.Close))
 plot(GSPC.Close, lm(AAPL.Vol~GSPC.Close)$residuals)
 ```
 
 ```{r}
 ##returns
 plot(AAPL.Vol~AAPL.Ret)
-plot(AAPL.Vol~GOOG.Ret)
-plot(AAPL.Vol~AMZN.Ret)
-plot(AAPL.Vol~GSPC.Ret)
-
-#returns
+abline(lm(AAPL.Vol~AAPL.Ret))
 plot(AAPL.Ret, lm(AAPL.Vol~AAPL.Ret)$residuals)
-plot(GOOG.Ret, lm(AAPL.Vol~GOOG.Ret)$residuals)
+
+plot(AAPL.Vol~GOOG.Ret)
+abline(lm(AAPL.Vol~AAPL.Ret))
+plot(AAPL.Ret, lm(AAPL.Vol~AAPL.Ret)$residuals)
+
+plot(AAPL.Vol~AMZN.Ret)
+abline(lm(AAPL.Vol~AMZN.Ret))
 plot(AMZN.Ret, lm(AAPL.Vol~AMZN.Ret)$residuals)
+
+plot(AAPL.Vol~GSPC.Ret)
+abline(lm(AAPL.Vol~GSPC.Ret))
 plot(GSPC.Ret, lm(AAPL.Vol~GSPC.Ret)$residuals)
 ```
 
