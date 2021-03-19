@@ -1,0 +1,54 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+##predicted volatilities
+plot(AAPL.Vol~AAPL.PVol)
+plot(AAPL.Vol~GOOG.PVol)
+plot(AAPL.Vol~AMZN.PVol)
+plot(AAPL.Vol~GSPC.PVol)
+##closing prices
+plot(AAPL.Vol~AAPL.Close)
+plot(AAPL.Vol~GOOG.Close)
+plot(AAPL.Vol~AMZN.Close)
+plot(AAPL.Vol~GSPC.Close)
+##returns
+plot(AAPL.Vol~AAPL.Ret)
+plot(AAPL.Vol~GOOG.Ret)
+plot(AAPL.Vol~AMZN.Ret)
+plot(AAPL.Vol~GSPC.Ret)
+##VIX
+plot(AAPL.Vol~VXAPLCLS)
+plot(AAPL.Vol~VXGOGCLS)
+plot(AAPL.Vol~VXAZNCLS)
+plot(AAPL.Vol~VIX.Close)
+
+
+##residuals
+##predictied volatilities
+plot(lm(AAPL.Vol~AAPL.PVol)$residuals)
+plot(lm(AAPL.Vol~GOOG.PVol)$residuals)
+plot(lm(AAPL.Vol~AMZN.PVol)$residuals)
+plot(lm(AAPL.Vol~GSPC.PVol)$residuals)
+#closing
+plot(lm(AAPL.Vol~AAPL.Close)$residuals)
+plot(lm(AAPL.Vol~GOOG.Close)$residuals)
+plot(lm(AAPL.Vol~AMZN.Close)$residuals)
+plot(lm(AAPL.Vol~GSPC.Close)$residuals)
+#returns
+plot(lm(AAPL.Vol~AAPL.Ret)$residuals)
+plot(lm(AAPL.Vol~GOOG.Ret)$residuals)
+plot(lm(AAPL.Vol~AMZN.Ret)$residuals)
+plot(lm(AAPL.Vol~GSPC.Ret)$residuals)
+#VIX
+plot(lm(AAPL.Vol~VXAPLCLS)$residuals)
+plot(lm(AAPL.Vol~VXGOGCLS)$residuals)
+plot(lm(AAPL.Vol~VXAZNCLS)$residuals)
+plot(lm(AAPL.Vol~VIX.Close)$residuals)
+
+
+```
