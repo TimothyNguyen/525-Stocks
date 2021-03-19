@@ -7,6 +7,7 @@ output:
 
 ```{r}
 rm(list=ls())
+library(corrplot)
 df <- read.csv(file="./volatility.csv")
 head(df)
 
@@ -32,14 +33,29 @@ AAPL.Vol = df$AAPL.Vol
 ```
 
 ```{r}
-cov(cbind(AAPL.PVol,GOOG.PVol,AMZN.PVol,GSPC.PVol))
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+m = cov(cbind(AAPL.PVol,GOOG.PVol,AMZN.PVol,GSPC.PVol, 
+          VIX.Close, AAPL.Close, VXAPLCLS, VXAZNCLS, 
+          VXGOGCLS, GOOG.Close, AMZN.Close, GSPC.Close,
+          Date, AAPL.Ret, AMZN.Ret, GOOG.Ret, GSPC.Ret, AAPL.Vol))
+ans <- data.frame(row=rownames(m)[row(m)], col=colnames(m)[col(m)], corr=c(m)) %>% filter(col == 'AAPL.Vol')
+write.csv(ans, "./cov.csv", row.names = FALSE)
+ans
 ```
 
 ## **Looking at correlation between variables**
 
 ```{r}
-x = cbind(AAPL.PVol,GOOG.PVol,AMZN.PVol,GSPC.PVol)
-cor(x, method = c("pearson"))
+corr_matrix = cbind(AAPL.PVol,GOOG.PVol,AMZN.PVol,GSPC.PVol, 
+          VIX.Close, AAPL.Close, VXAPLCLS, VXAZNCLS, 
+          VXGOGCLS, GOOG.Close, AMZN.Close, GSPC.Close,
+          Date, AAPL.Ret, AMZN.Ret, GOOG.Ret, GSPC.Ret, AAPL.Vol)
+corr_matrix = cor(corr_matrix, method = c("pearson"))
+corrplot(corr_matrix, method="color")
 ```
 
 ## **Descriptive Statistics:**
@@ -50,6 +66,31 @@ summary(AAPL.PVol)
 summary(GOOG.PVol)
 summary(AMZN.PVol)
 summary(GSPC.PVol)
+```
+
+```{r}
+summary(VXAPLCLS) 
+summary(VXAZNCLS)
+summary(VXGOGCLS) 
+```
+
+```{r}
+summary(VIX.Close)
+summary(AAPL.Close)
+summary(GOOG.Close) 
+summary(AMZN.Close)
+summary(GSPC.Close)
+```
+
+```{r}
+summary(AAPL.Ret) 
+summary(AMZN.Ret) 
+summary(GOOG.Ret) 
+summary(GSPC.Ret) 
+```
+
+```{r}
+summary(AAPL.Vol)
 ```
 
 ## **Looking at Apple.Volatility vs Apple.PVolatility**
@@ -94,29 +135,86 @@ summary(lm(AAPL.Vol~AMZN.PVol))
 ```
 
 ```{r}
-plot(lm(AAPL.Vol~AMZN.PVol))
-abline(AMZN.PVol, AAPL.Vol)
+plot(AMZN.PVol,AAPL.Vol)
+abline(lm(AAPL.Vol~AMZN.PVol))
 ```
 
 ```{r}
 plot(lm(AAPL.Vol~AMZN.PVol))
 ```
 
-## **Looking at Apple.Volatility vs Apple.PVolatility**
+## **Looking at Apple.Volatility vs GSPC.PVol**
 
 ```{r}
 summary(lm(AAPL.Vol~GSPC.PVol))
 ```
 
 ```{r}
+plot(GSPC.PVol, AAPL.Vol)
+abline(lm(AAPL.Vol~GSPC.PVol))
+```
+
+```{r}
 plot(lm(AAPL.Vol~GSPC.PVol))
-abline(GSPC.PVol, AAPL.Vol)
+```
+
+Looking just between scatterplot
+
+```{r}
+
+##predicted volatilities
+plot(AAPL.Vol~AAPL.PVol)
+plot(AAPL.Vol~GOOG.PVol)
+plot(AAPL.Vol~AMZN.PVol)
+plot(AAPL.Vol~GSPC.PVol)
+
+
+##residuals
+##predictied volatilities
+plot(AAPL.PVol, resid(lm(AAPL.Vol~AAPL.PVol)))
+plot(GOOG.PVol, lm(AAPL.Vol~GOOG.PVol)$residuals)
+plot(AMZN.PVol, lm(AAPL.Vol~AMZN.PVol)$residuals)
+plot(GSPC.PVol, lm(AAPL.Vol~GSPC.PVol)$residuals)
 ```
 
 ```{r}
-AAPL.Vol~
+##closing prices
+plot(AAPL.Vol~AAPL.Close)
+plot(AAPL.Vol~GOOG.Close)
+plot(AAPL.Vol~AMZN.Close)
+plot(AAPL.Vol~GSPC.Close)
+
+#closing
+plot(AAPL.Close, lm(AAPL.Vol~AAPL.Close)$residuals)
+plot(GOOG.Close, lm(AAPL.Vol~GOOG.Close)$residuals)
+plot(AMZN.Close, lm(AAPL.Vol~AMZN.Close)$residuals)
+plot(GSPC.Close, lm(AAPL.Vol~GSPC.Close)$residuals)
 ```
 
 ```{r}
-summary(lm(AAPL.Vol~AAPL.PVol+GOOG.PVol+AMZN.PVol+GSPC.PVol))
+##returns
+plot(AAPL.Vol~AAPL.Ret)
+plot(AAPL.Vol~GOOG.Ret)
+plot(AAPL.Vol~AMZN.Ret)
+plot(AAPL.Vol~GSPC.Ret)
+
+#returns
+plot(AAPL.Ret, lm(AAPL.Vol~AAPL.Ret)$residuals)
+plot(GOOG.Ret, lm(AAPL.Vol~GOOG.Ret)$residuals)
+plot(AMZN.Ret, lm(AAPL.Vol~AMZN.Ret)$residuals)
+plot(GSPC.Ret, lm(AAPL.Vol~GSPC.Ret)$residuals)
+```
+
+```{r}
+##VIX
+plot(AAPL.Vol~VXAPLCLS)
+plot(AAPL.Vol~VXGOGCLS)
+plot(AAPL.Vol~VXAZNCLS)
+plot(AAPL.Vol~VIX.Close)
+
+#VIX
+plot(VXAPLCLS, lm(AAPL.Vol~VXAPLCLS)$residuals)
+plot(VXGOGCLS, lm(AAPL.Vol~VXGOGCLS)$residuals)
+plot(VXAZNCLS, lm(AAPL.Vol~VXAZNCLS)$residuals)
+plot(VIX.Close, lm(AAPL.Vol~VIX.Close)$residuals)
 ```
