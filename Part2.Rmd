@@ -51,9 +51,10 @@ ans
 
 ```{r}
 corr_matrix = cbind(AAPL.PVol,GOOG.PVol,AMZN.PVol,GSPC.PVol, 
-          VIX.Close, AAPL.Close, VXAPLCLS, VXAZNCLS, 
-          VXGOGCLS, GOOG.Close, AMZN.Close, GSPC.Close,
-          Date, AAPL.Ret, AMZN.Ret, GOOG.Ret, GSPC.Ret, AAPL.Vol)
+          VIX.Close, AAPL.Close, GOOG.Close, AMZN.Close, GSPC.Close,
+          AAPL.Ret, AMZN.Ret, GOOG.Ret, GSPC.Ret, AAPL.Vol,
+          VXAPLCLS, VXAZNCLS, VXGOGCLS, 
+          Date)
 corr_matrix = cor(corr_matrix, method = c("pearson"))
 corrplot(corr_matrix, method="color")
 ```
@@ -158,10 +159,135 @@ abline(lm(AAPL.Vol~GSPC.PVol))
 plot(lm(AAPL.Vol~GSPC.PVol))
 ```
 
-Looking just between scatterplot
+# Closing Prices
+
+#### A. Appl.Vol vs AAPL.Close
 
 ```{r}
+summary(lm(AAPL.Vol~AAPL.Close))
+plot(AAPL.Vol~AAPL.Close)
+abline(lm(AAPL.Vol~AAPL.Close))
+# plot(AAPL.Close, lm(AAPL.Vol~AAPL.Close)$residuals)
+plot(lm(AAPL.Vol~AAPL.Close))
+```
 
+#### B. Appl.Vol vs GOOG.Close
+
+```{r}
+summary(lm(AAPL.Vol~GOOG.Close))
+plot(AAPL.Vol~GOOG.Close)
+abline(lm(AAPL.Vol~GOOG.Close))
+#plot(GOOG.Close, lm(AAPL.Vol~GOOG.Close)$residuals)
+plot(lm(AAPL.Vol~GOOG.Close))
+```
+
+#### C. Appl.Vol vs AMZN.Close
+
+```{r}
+summary(lm(AAPL.Vol~AMZN.Close))
+plot(AAPL.Vol~AMZN.Close)
+abline(lm(AAPL.Vol~AMZN.Close))
+# plot(AMZN.Close, lm(AAPL.Vol~AMZN.Close)$residuals)
+plot(lm(AAPL.Vol~AMZN.Close))
+```
+
+#### D. Appl.Vol vs GSPC.Close
+
+```{r}
+summary(lm(AAPL.Vol~GSPC.Close))
+plot(AAPL.Vol~GSPC.Close)
+abline(lm(AAPL.Vol~GSPC.Close))
+# plot(GSPC.Close, lm(AAPL.Vol~GSPC.Close)$residuals)
+plot(lm(AAPL.Vol~GSPC.Close))
+```
+
+# **RETURNS**
+
+#### A. Appl.Vol vs AAPL.Ret
+
+```{r}
+##returns
+summary(lm(AAPL.Vol~AAPL.Ret))
+plot(AAPL.Vol~AAPL.Ret)
+abline(lm(AAPL.Vol~AAPL.Ret))
+# plot(AAPL.Ret, lm(AAPL.Vol~AAPL.Ret)$residuals)
+plot(lm(AAPL.Vol~AAPL.Ret))
+```
+
+#### B. Appl.Vol vs GOOG.Ret
+
+```{r}
+summary(lm(AAPL.Vol~GOOG.Ret))
+plot(AAPL.Vol~GOOG.Ret)
+abline(lm(AAPL.Vol~GOOG.Ret))
+#plot(AAPL.Ret, lm(AAPL.Vol~GOOG.Ret)$residuals)
+plot(lm(AAPL.Vol~GOOG.Ret))
+```
+
+#### C. Appl.Vol vs. AMZN.Ret
+
+```{r}
+summary(lm(AAPL.Vol~AMZN.Ret))
+plot(AAPL.Vol~AMZN.Ret)
+abline(lm(AAPL.Vol~AMZN.Ret))
+# plot(AMZN.Ret, lm(AAPL.Vol~AMZN.Ret)$residuals)
+plot(lm(AAPL.Vol~AMZN.Ret))
+```
+
+#### D. Appl.Vol vs GSPC.Ret
+
+```{r}
+summary(lm(AAPL.Vol~GSPC.Ret))
+plot(AAPL.Vol~GSPC.Ret)
+abline(lm(AAPL.Vol~GSPC.Ret))
+# plot(GSPC.Ret, lm(AAPL.Vol~GSPC.Ret)$residuals)
+plot(lm(AAPL.Vol~GSPC.Ret))
+```
+
+# **VIX**
+
+#### A. Appl.Vol vs. VXAPLCLS
+
+```{r}
+summary(lm(AAPL.Vol~VXAPLCLS))
+plot(AAPL.Vol~VXAPLCLS)
+abline(lm(AAPL.Vol~VXAPLCLS))
+# plot(VXAPLCLS, lm(AAPL.Vol~VXAPLCLS)$residuals)
+plot(lm(AAPL.Vol~VXAPLCLS))
+```
+
+#### B. Appl.Vol vs. VXGOGCLS
+
+```{r}
+summary(lm(AAPL.Vol~VXGOGCLS))
+plot(AAPL.Vol~VXGOGCLS)
+abline(lm(AAPL.Vol~VXGOGCLS))
+# plot(VXGOGCLS, lm(AAPL.Vol~VXGOGCLS)$residuals)
+plot(lm(AAPL.Vol~VXGOGCLS))
+```
+
+#### C. Appl.Vol vs. VXAZNCLS
+
+```{r}
+summary(lm(AAPL.Vol~VXAZNCLS))
+plot(AAPL.Vol~VXAZNCLS)
+abline(lm(AAPL.Vol~VXAZNCLS))
+# plot(VXAZNCLS, lm(AAPL.Vol~VXAZNCLS)$residuals)
+plot(lm(AAPL.Vol~VXAZNCLS))
+```
+
+#### D. Appl.Vol vs. VIX.Close
+
+```{r}
+summary(lm(AAPL.Vol~VIX.Close))
+plot(AAPL.Vol~VIX.Close)
+abline(lm(AAPL.Vol~VIX.Close))
+# plot(VIX.Close, lm(AAPL.Vol~VIX.Close)$residuals)
+plot(lm(AAPL.Vol~VIX.Close))
+```
+
+```{r}
+'
 ##predicted volatilities
 plot(AAPL.Vol~AAPL.PVol)
 abline(lm(AAPL.Vol~AAPL.PVol))
@@ -183,57 +309,5 @@ plot(AAPL.Vol~GSPC.PVol)
 abline(lm(AAPL.Vol~GSPC.PVol))
 
 plot(GSPC.PVol, lm(AAPL.Vol~GSPC.PVol)$residuals)
-```
-
-```{r}
-##closing prices
-plot(AAPL.Vol~AAPL.Close)
-abline(lm(AAPL.Vol~AAPL.Close))
-plot(AAPL.Close, lm(AAPL.Vol~AAPL.Close)$residuals)
-
-
-plot(AAPL.Vol~GOOG.Close)
-abline(lm(AAPL.Vol~GOOG.Close))
-plot(GOOG.Close, lm(AAPL.Vol~GOOG.Close)$residuals)
-
-plot(AAPL.Vol~AMZN.Close)
-abline(lm(AAPL.Vol~AMZN.Close))
-plot(AMZN.Close, lm(AAPL.Vol~AMZN.Close)$residuals)
-
-plot(AAPL.Vol~GSPC.Close)
-abline(lm(AAPL.Vol~GSPC.Close))
-plot(GSPC.Close, lm(AAPL.Vol~GSPC.Close)$residuals)
-```
-
-```{r}
-##returns
-plot(AAPL.Vol~AAPL.Ret)
-abline(lm(AAPL.Vol~AAPL.Ret))
-plot(AAPL.Ret, lm(AAPL.Vol~AAPL.Ret)$residuals)
-
-plot(AAPL.Vol~GOOG.Ret)
-abline(lm(AAPL.Vol~AAPL.Ret))
-plot(AAPL.Ret, lm(AAPL.Vol~AAPL.Ret)$residuals)
-
-plot(AAPL.Vol~AMZN.Ret)
-abline(lm(AAPL.Vol~AMZN.Ret))
-plot(AMZN.Ret, lm(AAPL.Vol~AMZN.Ret)$residuals)
-
-plot(AAPL.Vol~GSPC.Ret)
-abline(lm(AAPL.Vol~GSPC.Ret))
-plot(GSPC.Ret, lm(AAPL.Vol~GSPC.Ret)$residuals)
-```
-
-```{r}
-##VIX
-plot(AAPL.Vol~VXAPLCLS)
-plot(AAPL.Vol~VXGOGCLS)
-plot(AAPL.Vol~VXAZNCLS)
-plot(AAPL.Vol~VIX.Close)
-
-#VIX
-plot(VXAPLCLS, lm(AAPL.Vol~VXAPLCLS)$residuals)
-plot(VXGOGCLS, lm(AAPL.Vol~VXGOGCLS)$residuals)
-plot(VXAZNCLS, lm(AAPL.Vol~VXAZNCLS)$residuals)
-plot(VIX.Close, lm(AAPL.Vol~VIX.Close)$residuals)
+'
 ```
