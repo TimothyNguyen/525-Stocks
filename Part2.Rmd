@@ -51,9 +51,10 @@ ans
 
 ```{r}
 corr_matrix = cbind(AAPL.PVol,GOOG.PVol,AMZN.PVol,GSPC.PVol, 
-          VIX.Close, AAPL.Close, VXAPLCLS, VXAZNCLS, 
-          VXGOGCLS, GOOG.Close, AMZN.Close, GSPC.Close,
-          Date, AAPL.Ret, AMZN.Ret, GOOG.Ret, GSPC.Ret, AAPL.Vol)
+          VIX.Close, AAPL.Close, GOOG.Close, AMZN.Close, GSPC.Close,
+          AAPL.Ret, AMZN.Ret, GOOG.Ret, GSPC.Ret, AAPL.Vol,
+          VXAPLCLS, VXAZNCLS, VXGOGCLS, 
+          Date)
 corr_matrix = cor(corr_matrix, method = c("pearson"))
 corrplot(corr_matrix, method="color")
 ```
