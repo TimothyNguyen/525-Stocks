@@ -329,28 +329,240 @@ abline(lm(AAPL.Vol~VIX.Close))
 plot(lm(AAPL.Vol~VIX.Close))
 ```
 
+# Date
+
 ```{r}
-'
-##predicted volatilities
-plot(AAPL.Vol~AAPL.PVol)
-abline(lm(AAPL.Vol~AAPL.PVol))
-
-plot(AAPL.PVol, resid(lm(AAPL.Vol~AAPL.PVol)))
-
-plot(AAPL.Vol~GOOG.PVol)
-abline(lm(AAPL.Vol~GOOG.PVol))
-
-plot(GOOG.PVol, lm(AAPL.Vol~GOOG.PVol)$residuals)
-
-
-plot(AAPL.Vol~AMZN.PVol)
-abline(lm(AAPL.Vol~AMZN.PVol))
-
-plot(AMZN.PVol, lm(AAPL.Vol~AMZN.PVol)$residuals)
-
-plot(AAPL.Vol~GSPC.PVol)
-abline(lm(AAPL.Vol~GSPC.PVol))
-
-plot(GSPC.PVol, lm(AAPL.Vol~GSPC.PVol)$residuals)
-'
+summary(lm(AAPL.Vol~Date))
+plot(AAPL.Vol~Date)
+abline(lm(AAPL.Vol~Date))
+# plot(VXAZNCLS, lm(AAPL.Vol~VXAZNCLS)$residuals)
+plot(lm(AAPL.Vol~Date))
 ```
+
+```{r}
+X = Date^2
+Y = AAPL.Vol
+summary(lm(Y ~ X))
+mod = lm(formula = Y ~ X)
+plot(X, Y)
+abline(mod)
+plot(lm(Y~X))
+```
+
+It's very hard to transform the data between
+
+# Francis' Closing & VIX Transformation Analysis
+
+AAPL vs Closing prices: For most of the transformations in regards to Apple closing values, Transformations do not seem to make quite an impact on our data. One exception may be the first one of Apple.vol vs Apple.Close, which does seem to make the residuals a bit more normal, however, are skewed heavily towards one side or the other.
+
+```{r Transformations}
+c <- lm(AAPL.Vol ~ AAPL.Close)
+
+d <- lm(log(AAPL.Vol) ~ AAPL.Close)
+
+### Some transforms of Appl Volitility vs Appl Close
+
+par(mfrow=c(2,2)) # <- Remove this line if you want graphs not grouped
+
+plot(fitted(c), resid(c), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "AAPL.Close", ylab = "Residuals", main = "Apple Close versus Apple vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(fitted(d), resid(d), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "AAPL.Close", ylab = "Log of Residuals", main = "Apple Close versus Apple vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+
+plot(AAPL.Close, rstandard(c), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "AAPL.Close", ylab = "Standardized Residuals", main = "Apple close versus Apple vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(AAPL.Close, rstandard(d), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "AAPL.Close", ylab = "Standardized Residuals", main = "Apple close versus Apple vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(c, which = 1)
+plot(d, which = 1)
+```
+
+```{r}
+c <- lm(AAPL.Vol ~ AMZN.Close)
+
+d <- lm(sqrt(AAPL.Vol) ~ AMZN.Close)
+
+### Some transforms of Appl Volitility vs AMZN Close
+
+#par(mfrow=c(2,2)) # <- Remove this line if you want graphs not grouped
+plot(AMZN.Close, resid(c), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "AMZN.Close", ylab = "Residuals", main = "AMZN Close versus Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(AMZN.Close, resid(d), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "AMZN.Close", ylab = "Squared root of Residuals", main = "AMZN Close versus Sqrt Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(AMZN.Close, rstandard(c), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "AMZN.Close", ylab = "Standardized Residuals", main = "AMZN Close versus Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(AMZN.Close, rstandard(d), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "AMZN.Close", ylab = "Standardized Residuals", main = "AMZN Close versus Sqrt Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(c, which = 1)
+plot(d, which = 1)
+
+```
+
+For Transformation on google, seems that it is not neccesary as it barely makes any difference upon analyzing the regressions as the graphs barely change.
+
+```{r}
+c <- lm(AAPL.Vol ~ GOOG.Close)
+
+d <- lm(sqrt(AAPL.Vol) ~ GOOG.Close)
+
+### Some transforms of Appl Volitility vs Google Close
+
+par(mfrow=c(2,2)) # <- Remove this line if you want graphs not grouped
+plot(GOOG.Close, resid(c), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "GOOG.Close", ylab = "Residuals", main = "Google Close versus Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(GOOG.Close, resid(d), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "GOOG.Close", ylab = "Squared root of Residuals", main = "Google Close versus Sqrt Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(GOOG.Close, rstandard(c), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "GOOG.Close", ylab = "Standardized Residuals", main = "Google Close versus Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(GOOG.Close, rstandard(d), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "GOOG.Close", ylab = "Standardized Residuals", main = "Google Close versus Sqrt Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(c, which = 1)
+plot(d, which = 1)
+```
+
+For the S&P 500, not much seems to suggest that a transform changes much. Standardized residuals also reveal only a few outliers very close to 3. With a transform on the x-axis (to make up for the curve in residual trendline) and y-axis in attempt to make the residuals linear,there abnormality suggests its not any kind of linear relationship
+
+```{r}
+c <- lm(AAPL.Vol ~ GSPC.Close)
+
+d <- lm(sqrt(AAPL.Vol) ~ GSPC.Close^2)
+
+### Some transforms of Appl Volitility vs Google Close
+
+#par(mfrow=c(2,2)) # <- Remove this line if you want graphs not grouped
+plot(GSPC.Close, resid(c), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "GSPC.Close", ylab = "Residuals", main = "S&P 500 Close versus Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(GSPC.Close, resid(d), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "GSPC.Close", ylab = "Squared root of Residuals", main = "S&P 500^2 Close versus Sqrt Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(GSPC.Close, rstandard(c), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "GSPC.Close", ylab = "Standardized Residuals", main = "S&P 500 Close versus Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(GSPC.Close, rstandard(d), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "GSPC.Close", ylab = "Standardized Residuals", main = "S&P 500^2 Close versus Sqrt Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(c, which = 1)
+plot(d, which = 1)
+```
+
+The more interesting variables we have are the VIX variables, as they have the most correlation with the predicted APPL.vol. And it makes sense because the VIX is calculated to help predict stock volatility using options and other macroeconomic factors other than by directly a stock's return or close price
+
+```{r}
+c <- lm(AAPL.Vol ~ VIX.Close)
+
+d <- lm(log(AAPL.Vol) ~ VIX.Close)
+
+### Some transforms of Appl Volitility vs Google Close
+
+#par(mfrow=c(2,2)) # <- Remove this line if you want graphs not grouped
+plot(VIX.Close, resid(c), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "VIX.Close", ylab = "Residuals", main = "VIX Close versus Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(VIX.Close, resid(d), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "VIX.Close", ylab = "Log of Residuals", main = "VIX Close versus Sqrt Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+
+plot(c, which = 1)
+plot(d, which = 1)
+```
+
+After the Transform of Log(Appl.vol), the residual plots became a lot more distributed like a normal distribution, though not uniformly distributed throughout the graph. However, a Logarithmic transformation on the Y-value certainly made an improvement to our model, and brings the possibility of using a transform to analyze our correlations to perhaps get a better model.
+
+```{r}
+c <- lm(AAPL.Vol ~ VXAPLCLS)
+
+d <- lm(log(AAPL.Vol) ~ VXAPLCLS)
+
+### Some transforms of Appl Volitility vs Google Close
+
+#par(mfrow=c(2,2)) # <- Remove this line if you want graphs not grouped
+plot(VXAPLCLS, resid(c), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "VXAPLCLS", ylab = "Residuals", main = "VIX Apple versus Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(VXAPLCLS, resid(d), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "VXAPLCLS", ylab = "Log of Residuals", main = "VIX Apple versus Sqrt Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+
+
+plot(c, which = 1)
+plot(d, which = 1)
+```
+
+The Log transformation of Appl.vol with Appl.vix is an even better result of transformation. The values arent as left skewed, and better reflects the linear relationship between the two variables.
+
+```{r}
+c <- lm(AAPL.Vol ~ VXAZNCLS)
+
+d <- lm(log(AAPL.Vol) ~ VXAZNCLS)
+
+### Some transforms of Appl Volitility vs Google Close
+
+#par(mfrow=c(2,2)) # <- Remove this line if you want graphs not grouped
+plot(VXAZNCLS, resid(c), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "VXAZNCLS", ylab = "Residuals", main = "VIX AMZN versus Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(VXAZNCLS, resid(d), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "VXAZNCLS", ylab = "Log of Residuals", main = "VIX AMZN versus Sqrt Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(c, which = 1)
+plot(d, which = 1)
+```
+
+The same transformations of using logarithmic transform also works very well to better serve our linear model. the results are much more normal than without a transform.
+
+```{r}
+c <- lm(AAPL.Vol ~ VXGOGCLS)
+
+d <- lm(log(AAPL.Vol) ~ VXGOGCLS)
+
+### Some transforms of Appl Volitility vs Google Close
+
+#par(mfrow=c(2,2)) # <- Remove this line if you want graphs not grouped
+plot(VXGOGCLS, resid(c), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "VXGOGCLS", ylab = "Residuals", main = "VIX GOOG versus Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(VXGOGCLS, resid(d), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "VXGOGCLS", ylab = "Log of Residuals", main = "VIX GOOG versus Sqrt Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(c, which = 1)
+plot(d, which = 1)
+```
+
+Conclusion: Using a logarithmic transformation upon our VIX variables in our models would be better to show a much more linear relationship between our data.
