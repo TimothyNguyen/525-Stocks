@@ -332,12 +332,24 @@ plot(lm(AAPL.Vol~VIX.Close))
 # Date
 
 ```{r}
-summary(lm(AAPL.Vol~))
-plot(AAPL.Vol~VXAZNCLS)
-abline(lm(AAPL.Vol~VXAZNCLS))
+summary(lm(AAPL.Vol~Date))
+plot(AAPL.Vol~Date)
+abline(lm(AAPL.Vol~Date))
 # plot(VXAZNCLS, lm(AAPL.Vol~VXAZNCLS)$residuals)
-plot(lm(AAPL.Vol~VXAZNCLS))
+plot(lm(AAPL.Vol~Date))
 ```
+
+```{r}
+X = Date^2
+Y = AAPL.Vol
+summary(lm(Y ~ X))
+mod = lm(formula = Y ~ X)
+plot(X, Y)
+abline(mod)
+plot(lm(Y~X))
+```
+
+It's very hard to transform the data between
 
 # Francis' Closing & VIX Transformation Analysis
 
