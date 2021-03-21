@@ -50,11 +50,7 @@ ans
 ## **Looking at correlation between variables**
 
 ```{r}
-corr_matrix = cbind(AAPL.PVol,GOOG.PVol,AMZN.PVol,GSPC.PVol, 
-          VIX.Close, AAPL.Close, GOOG.Close, AMZN.Close, GSPC.Close,
-          AAPL.Ret, AMZN.Ret, GOOG.Ret, GSPC.Ret, AAPL.Vol,
-          VXAPLCLS, VXAZNCLS, VXGOGCLS, 
-          Date)
+corr_matrix = cbind(AAPL.PVol, GOOG.PVol,AMZN.PVol,GSPC.PVol,  AAPL.Close, GOOG.Close, AMZN.Close, GSPC.Close, AAPL.Ret, GOOG.Ret, AMZN.Ret, GSPC.Ret, VXAPLCLS, VXGOGCLS, VXAZNCLS, VIX.Close, AAPL.Vol, Date)
 corr_matrix = cor(corr_matrix, method = c("pearson"))
 corrplot(corr_matrix, method="color")
 ```
@@ -114,6 +110,18 @@ abline(lm(AAPL.Vol~AAPL.PVol))
 plot(lm(AAPL.Vol ~ AAPL.PVol))
 ```
 
+```{r}
+
+X = AAPL.PVol
+Y = AAPL.Vol^1.3
+summary(lm(Y ~ X))
+mod = lm(formula = Y ~ X)
+plot(X, Y)
+abline(mod)
+plot(lm(Y~X))
+
+```
+
 ## **Looking at Apple.Volatility vs Google.PVolatility**
 
 ```{r}
@@ -127,6 +135,21 @@ abline(lm(AAPL.Vol~GOOG.PVol))
 
 ```{r}
 plot(lm(AAPL.Vol~GOOG.PVol))
+```
+
+WOrking to transform data
+
+```{r}
+# plot(AAPL.PVol, resid(lm(AAPL.Vol~exp(AAPL.PVol))))
+# plot(lm(AAPL.Vol ~ log(AAPL.PVol)))
+X = GOOG.PVol^3
+Y = AAPL.Vol
+summary(lm(Y ~ X))
+mod = lm(formula = Y ~ X)
+plot(X, Y)
+abline(mod)
+plot(lm(Y~X))
+# abline(lm(AAPL.Vol~(AAPL.PVol^2)))
 ```
 
 ## **Looking at Apple.Volatility vs Amazon.PVolatility**
@@ -144,6 +167,16 @@ abline(lm(AAPL.Vol~AMZN.PVol))
 plot(lm(AAPL.Vol~AMZN.PVol))
 ```
 
+```{r}
+X = AMZN.PVol^2
+Y = AAPL.Vol^1.3
+summary(lm(Y ~ X))
+mod = lm(formula = Y ~ X)
+plot(X, Y)
+abline(mod)
+plot(lm(Y~X))
+```
+
 ## **Looking at Apple.Volatility vs GSPC.PVol**
 
 ```{r}
@@ -157,6 +190,16 @@ abline(lm(AAPL.Vol~GSPC.PVol))
 
 ```{r}
 plot(lm(AAPL.Vol~GSPC.PVol))
+```
+
+```{r}
+X = GSPC.PVol^2
+Y = AAPL.Vol
+summary(lm(Y ~ X))
+mod = lm(formula = Y ~ X)
+plot(X, Y)
+abline(mod)
+plot(lm(Y~X))
 ```
 
 # Closing Prices
