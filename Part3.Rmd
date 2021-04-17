@@ -1,0 +1,90 @@
+---
+title: "Part 3: Stocks Project"
+output: html_notebook
+---
+
+```{r}
+rm(list=ls())
+library(corrplot)
+df <- read.csv(file="./volatility.csv")
+head(df)
+
+
+AAPL.PVol = df$AAPL.PVol
+GOOG.PVol = df$GOOG.PVol
+AMZN.PVol = df$AMZN.PVol
+GSPC.PVol = df$GSPC.PVol
+VIX.Close = df$VIX.Close
+AAPL.Close = df$AAPL.Close
+VXAPLCLS = df$VXAPLCLS
+VXAZNCLS = df$VXAZNCLS
+VXGOGCLS = df$VXGOGCLS 
+GOOG.Close = df$GOOG.Close
+AMZN.Close = df$AMZN.Close
+GSPC.Close = df$GSPC.Close 
+Date = df$Date
+AAPL.Ret = df$AAPL.Ret
+AMZN.Ret = df$AMZN.Ret
+GOOG.Ret = df$GOOG.Ret
+GSPC.Ret = df$GSPC.Ret
+AAPL.Vol = df$AAPL.Vol
+```
+
+```{r}
+#install.packages("olsrr")
+library("olsrr")
+mod <- lm(AAPL.Vol ~ VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close+AMZN.PVol+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol, data=df)
+k <- ols_step_all_possible(mod)
+plot(k)
+k
+```
+
+```{r}
+sub <- ols_step_best_subset(mod)
+sub
+plot(sub)
+```
+
+Forward Regression:
+
+```{r}
+ols_step_forward_p(mod, details = TRUE)
+```
+
+## Stepwise Backward Regression
+
+```{r}
+k <- ols_step_backward_p(mod, details=TRUE)
+k
+```
+
+## Stepwise Regression
+
+Build regression model from a set of candidate predictor variables by entering and removing predictors based on p values, in a stepwise manner until there is no variable left to enter or remove any more. The model should include all the candidate predictor variables. If details is set to `TRUE`, each step is displayed.
+
+```{r}
+ols_step_both_p(mod, details = TRUE)
+```
+
+**Hello World**
+
+```{r}
+new_mod <- lm(AAPL.Vol ~ VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close+AMZN.PVol, data=df)
+k <- ols_step_both_p(new_mod, details = TRUE)
+plot(k)
+k
+```
+
+```{r}
+m <- new_mod
+inf_df <- data.frame(
+  "dffits" = dffits(m),
+  "cooks" = cooks.distance(m),
+  "dfb1" = dfbetas(m)[,1],
+  "dfb2" = dfbetas(m)[,2],
+  "dfb3" = dfbetas(m)[,3],
+  "dfb4" = dfbetas(m)[,4],
+  "dfb5" = dfbetas(m)[,5]
+)
+plot(inf_df$cooks, type = "l",col="red")
+```

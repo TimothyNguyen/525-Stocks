@@ -112,8 +112,8 @@ plot(lm(AAPL.Vol ~ AAPL.PVol))
 
 ```{r}
 
-X = AAPL.PVol
-Y = AAPL.Vol^1.3
+X = exp(AAPL.PVol)
+Y = AAPL.Vol
 summary(lm(Y ~ X))
 mod = lm(formula = Y ~ X)
 plot(X, Y)
@@ -168,8 +168,8 @@ plot(lm(AAPL.Vol~AMZN.PVol))
 ```
 
 ```{r}
-X = AMZN.PVol^2
-Y = AAPL.Vol^1.3
+X = 1/AMZN.PVol
+Y = AAPL.Vol
 summary(lm(Y ~ X))
 mod = lm(formula = Y ~ X)
 plot(X, Y)
