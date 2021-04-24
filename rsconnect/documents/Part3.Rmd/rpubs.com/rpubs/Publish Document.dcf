@@ -1,0 +1,11 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/756200/408334567e0549e6bc9c1453e6a0c251
+bundleId: https://api.rpubs.com/api/v1/document/756200/408334567e0549e6bc9c1453e6a0c251
+url: http://rpubs.com/timothynguye/756200
+when: 1619112305.67879
+lastSyncTime: 1619112305.67879
