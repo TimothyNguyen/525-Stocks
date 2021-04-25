@@ -129,7 +129,7 @@ library("olsrr")
 ```
 
 ```{r}
-mod <- lm(AAPL.Vol~AAPL.Close+AMZN.Close+GOOG.Close+GSPC.Close+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol+AAPL.Ret+AMZN.Ret+GOOG.Ret+GSPC.Ret+VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close, data=df)
+mod <- lm(AAPL.Vol~AAPL.Close+AMZN.Close+GOOG.Close+GSPC.Close+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol+AAPL.Ret+AMZN.Ret+GOOG.Ret+GSPC.Ret+VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close+Date, data=df)
 sub <- ols_step_best_subset(mod)
 sub
 plot(sub)
@@ -156,15 +156,10 @@ plot(ols_step_both_p(mod))
 ```
 
 ```{r}
-ols_step_both_p(lm(AAPL.Vol~AMZN.Close+GSPC.Close+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol+AAPL.Ret+AMZN.Ret+GOOG.Ret+GSPC.Ret+VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close))
-```
-
-```{r}
 fullmod <- lm(AAPL.Vol ~ ., data = df)
 #summary(fullmod)
 
 #include predictors that pass at level 0.01
-mod <- lm(AAPL.Vol~VXAPLCLS+VXAZNCLS+AMZN.Close+GSPC.Close+AMZN.Ret+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol) 
 summary(mod)
 
 ols_step_both_p(mod)
@@ -369,7 +364,6 @@ update_mod<- ols_step_backward_aic(lm(AAPL.Vol ~ vxaplcls+vxazncls+amznclose+gsp
 ```
 
 ```{r}
-
 next_mod_HO <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol)
 
 test_mod_combo <- lm(AAPL.Vol ~ vxazncls  + amznclose + (amznclose2) + gspcclose + (gspcclose2)  + (amznpvol2)  + (amznpvol*googpvol))
@@ -413,8 +407,17 @@ date_model <- lm(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+
 lekha <- AAPL.Vol~VXAPLCLS+AMZN.PVol+(GOOG.PVol*GSPC.PVol*AMZN.PVol )+Date+Date2+AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAZNCLS
 theresa <- AAPL.Vol~VXAPLCLS+(GOOG.PVol*AMZN.PVol)+Date+Date2+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAZNCLS
 
+tim <- AAPL.Vol~VXAPLCLS+AMZN.PVol+(GOOG.PVol*GSPC.PVol*AMZN.PVol )+Date+Date2+AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol5+GSPC.Close+VXAZNCLS
+
+
 #combo_mod <- lm(theresa)
-combo_mod <- lm(lekha)
+#combo_mod <- lm(lekha)
+combo_mod <- lm(tim)
+summary(combo_mod)
+```
+
+```{r}
+anova(combo_mod)
 ```
 
 ```{r}
@@ -424,7 +427,6 @@ library(caret)
 data = df %>% mutate(AMZN.PVol2, AMZN.Close2, GSPC.Close2, AMZN.Close3, GSPC.Close3, GSPC.PVol2, GSPC.PVol3, GSPC.PVol4, GSPC.PVol5, GOOG.PVol2, GOOG.PVol3, GOOG.PVol4, GSPC.PVol6, Date2)
 
 set.seed(125) 
-
 
 # defining training control as
 # repeated cross-validation and 
@@ -436,15 +438,17 @@ train_control <- trainControl(method = "repeatedcv",
 # as target variable and rest other column
 # as independent varaible
 #model <- train(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+ GSPC.PVol2+GSPC.PVol3+GSPC.PVol5+GSPC.PVol6+AMZN.Close+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS+Date+Date2, data, method = "lm", trControl = train_control)
-  
 
-model <- train(lekha, data, method = "lm", trControl = train_control)
+#model <- train(lekha, data, method = "lm", trControl = train_control)
 #model = train(theresa, data, method = "lm", trControl = train_control)
+model <- train(tim, data, method = "lm", trControl = train_control)
 
 # printing model performance metrics
 # along with other details
 model
 summary(model)
+MSPR=sum(summary(model)$residuals^2)/503   
+MSPR
 ```
 
 ```{r}
@@ -490,8 +494,8 @@ plot(date_model)
 ```
 
 ```{r}
-plot(AAPL.Vol, resid(best_model))
-plot(AAPL.Vol, resid(date_model))
+plot(AAPL.Vol, resid(combo_mod))
+#plot(AAPL.Vol, resid(date_model))
 ```
 
 ```{r}
