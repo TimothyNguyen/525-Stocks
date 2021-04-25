@@ -1,0 +1,35 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(readr)
+df <- read_csv("volatility.csv")
+head(df)
+attach(df)
+```
+
+```{r}
+AAPL.PVol = df$AAPL.PVol
+GOOG.PVol = df$GOOG.PVol
+AMZN.PVol = df$AMZN.PVol
+GSPC.PVol = df$GSPC.PVol
+VIX.Close = df$VIX.Close
+AAPL.Close = df$AAPL.Close
+VXAPLCLS = df$VXAPLCLS
+VXAZNCLS = df$VXAZNCLS
+VXGOGCLS = df$VXGOGCLS 
+GOOG.Close = df$GOOG.Close
+AMZN.Close = df$AMZN.Close
+GSPC.Close = df$GSPC.Close 
+AAPL.Ret = df$AAPL.Ret
+AMZN.Ret = df$AMZN.Ret
+GOOG.Ret = df$GOOG.Ret
+GSPC.Ret = df$GSPC.Ret
+AAPL.Vol = df$AAPL.Vol
+```
+
+```{r}
+
+```

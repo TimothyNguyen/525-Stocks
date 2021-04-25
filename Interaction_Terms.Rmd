@@ -1,0 +1,253 @@
+---
+title: "Interaction Terms"
+output: html_notebook
+---
+
+```{r}
+library(readr)
+df <- read.csv("./volatility.csv")
+head(df)
+attach(df)
+```
+
+```{r}
+ols_step_both_p(lm(AAPL.Vol~AAPL.Close+AMZN.Close+GOOG.Close+GSPC.Close+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol+AAPL.Ret+AMZN.Ret+GOOG.Ret+GSPC.Ret+VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close))
+
+ols_step_backward_aic(lm(AAPL.Vol~AAPL.Close+AMZN.Close+GOOG.Close+GSPC.Close+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol+AAPL.Ret+AMZN.Ret+GOOG.Ret+GSPC.Ret+VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close))
+
+ols_step_both_p(lm(AAPL.Vol~ ., data=df))
+ols_step_backward_aic(lm(AAPL.Vol~ ., data=df))
+```
+
+```{r}
+fullmod <- lm(AAPL.Vol ~ ., data = df)
+summary(fullmod)
+
+#include predictors that pass at level 0.01
+mod <- lm(AAPL.Vol~VXAPLCLS+VXAZNCLS+AMZN.Close+GSPC.Close+AMZN.Ret+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol) 
+
+#new preliminary model 
+nmod <- lm(AAPL.Vol~VXAZNCLS+AMZN.Close+VXAPLCLS+GOOG.PVol+GSPC.PVol+GSPC.Close+AMZN.PVol+AAPL.PVol+GSPC.Ret) 
+
+#Collinearity Diagnostics
+ols_coll_diag(nmod)
+
+#No VIF above 10, but some warrant further investigation: VXAZNCLS, AMZN.PVol, and GSPC.PVol 
+
+#could introduce higher order predictor, or interaction
+```
+
+```{r}
+#Interaction Terms 
+
+#step 1: corr matrix between predictors 
+corr_matrix = cbind(VXAPLCLS,VXAZNCLS,AMZN.Close,GSPC.Close,GSPC.Ret,AAPL.PVol,AMZN.PVol,GOOG.PVol,GSPC.PVol)
+corr_matrix = cor(corr_matrix, method = c("pearson"))
+library(corrplot)
+corrplot(corr_matrix, method="number")
+```
+
+```{r}
+
+#step 2: center all predictors
+vxazncls <- VXAZNCLS - mean(VXAZNCLS)
+vxaplcls <- VXAPLCLS - mean(VXAPLCLS)
+amznclose <- AMZN.Close - mean(AMZN.Close)
+gspcclose <- GSPC.Close - mean(GSPC.Close)
+gspcret <- GSPC.Ret - mean(GSPC.Ret)
+aaplpvol <- AAPL.PVol - mean(AAPL.PVol)
+amznpvol <- AMZN.PVol - mean(AMZN.PVol)
+googpvol <- GOOG.PVol - mean(GOOG.PVol)
+gspcpvol <- GSPC.PVol - mean(GSPC.PVol)
+```
+
+```{r}
+#plots
+mod <- lm(AAPL.Vol~VXAPLCLS+VXAZNCLS+AMZN.Close+GSPC.Close+AMZN.Ret+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol) 
+plot(vxaplcls*vxazncls, mod$residuals)
+plot(amznclose*gspcclose, mod$residuals)
+
+plot(aaplpvol*amznpvol, mod$residuals)
+plot(aaplpvol*googpvol, mod$residuals)
+plot(aaplpvol*gspcpvol, mod$residuals)
+plot(amznpvol*googpvol, mod$residuals)
+plot(amznpvol*gspcpvol, mod$residuals)
+plot(googpvol*gspcpvol, mod$residuals)
+
+plot(aaplpvol*amznpvol*googpvol, mod$residuals)
+plot(aaplpvol*amznpvol*gspcpvol, mod$residuals)
+plot(amznpvol*googpvol*gspcpvol, mod$residuals)
+plot(aaplpvol*googpvol*gspcpvol, mod$residuals)
+
+plot(aaplpvol*amznpvol*googpvol*gspcpvol, mod$residuals)
+
+```
+
+```{r}
+
+
+#add interaction terms of highly correlated variables 
+mod <- lm(AAPL.Vol~VXAPLCLS+VXAZNCLS+AMZN.Close+GSPC.Close+AMZN.Ret+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol) 
+
+
+mod_VIXint <- lm(AAPL.Vol~vxaplcls+vxazncls+(vxaplcls*vxazncls)+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol) 
+plot(vxaplcls*vxazncls, mod_VIXint$residuals)
+
+mod_CLOSEint <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+(amznclose*gspcclose)+amznret+aaplpvol+amznpvol+googpvol+gspcpvol)
+plot( amznclose*gspcclose, mod_CLOSEint$residuals)
+
+mod_PV1_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (aaplpvol*amznpvol))
+plot( aaplpvol*amznpvol, mod_PV1_int$residuals)
+
+mod_PV2_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (aaplpvol*googpvol)) 
+plot(aaplpvol*googpvol, mod_PV2_int$residuals)
+
+mod_PV3_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (aaplpvol*gspcpvol)) 
+plot( aaplpvol*gspcpvol, mod_PV3_int$residuals)
+
+mod_PV4_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (amznpvol*googpvol)) 
+plot(amznpvol*googpvol, mod_PV4_int$residuals)
+
+mod_PV5_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (amznpvol*gspcpvol)) 
+plot(amznpvol*gspcpvol, mod_PV5_int$residuals)
+
+mod_PV6_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (googpvol*gspcpvol)) 
+plot(googpvol*gspcpvol, mod_PV6_int$residuals)
+
+mod_PV8_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (googpvol*gspcpvol*amznpvol*aaplpvol)) 
+
+mod_ALL_int <- lm(AAPL.Vol~vxaplcls+vxazncls+(vxaplcls*vxazncls)+amznclose+gspcclose+(amznclose*gspcclose)+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (googpvol*gspcpvol*amznpvol*aaplpvol)) 
+
+anova(mod, mod_VIXint)
+ 
+anova(mod, mod_CLOSEint)
+
+anova(mod, mod_PV1_int)
+
+anova(mod, mod_PV2_int)
+
+anova(mod, mod_PV3_int)
+
+anova(mod, mod_PV4_int)
+
+anova(mod, mod_PV5_int)
+
+anova(mod, mod_PV6_int)
+
+anova(mod, mod_PV8_int)
+
+anova(mod, mod_ALL_int)
+
+anova(mod_PV8_int, mod_ALL_int)
+
+
+```
+
+------------------------------------------------------------------------
+
+```{r}
+next_mod_HO <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol)
+
+intermod1 <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol + amznpvol*googpvol)
+
+intermod2 <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol + amznpvol*gspcpvol)
+
+intermod3 <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol + gspcpvol*googpvol)
+
+anova(next_mod_HO, intermod1)
+
+anova(next_mod_HO, intermod2)
+
+anova(next_mod_HO, intermod3)
+
+
+#quick baskwards selection for which int terms could be dropped 
+
+update_mod<- ols_step_backward_aic(lm(AAPL.Vol ~ vxaplcls+vxazncls+amznclose+gspcclose+gspcret+aaplpvol+amznpvol+googpvol+gspcpvol + (googpvol*gspcpvol*amznpvol*aaplpvol)))
+
+```
+
+```{r}
+summary(lm(AAPL.Vol ~ vxaplcls+vxazncls+amznclose+gspcclose+gspcret+aaplpvol+amznpvol+googpvol+gspcpvol + (googpvol*gspcpvol*amznpvol*aaplpvol)))
+
+###uncenter
+
+#c <- mean(VXAPLCLS)+mean(VXAZNCLS)+mean(AMZN.Close)+mean(GSPC.Ret)+mean(AMZN.PVol)+
+#lm(AAPL.Vol ~ VXAPLCLS+VXAZNCLS+AMZN.Close+GSPC.Ret+AMZN.PVol+ (GOOG.PVol+mean(GOOG.PVol)*GSPC.PVol+mean(GSPC.PVol)*AMZN.PVol+mean(AMZN.PVol)*AAPL.PVol+mean(AAPL.PVol)))
+
+```
+
+```{r}
+#tests for higher order terms
+alpha = 0.05
+n = length(AAPL.Vol)
+Fstar = qf(1-alpha, 1, n-3)
+Fstar
+dfsse = n-3
+#using Lekha's code for ch 8 
+#set of predictors narrowed according to best subset selection 
+
+vxazncls2 <- vxazncls^2
+Q1 <- lm(AAPL.Vol ~ vxazncls + vxazncls2)
+#remains linear
+#summary(Q1)
+
+vxaplcls2<- vxaplcls^2
+Q2 <- lm(AAPL.Vol ~ vxaplcls + vxaplcls2)
+#remains linear
+#summary(Q2)
+
+amznclose2 <- amznclose^2
+Q3 <- lm(AAPL.Vol ~ amznclose + amznclose2)
+#include quadratic - test cubic
+#summary(Q3)
+
+gspcclose2 <- gspcclose^2
+Q4 <- lm(AAPL.Vol ~ gspcclose + gspcclose2)
+#include quadratic - test cubic
+#summary(Q4)
+
+amznpvol2 <- amznpvol^2
+Q7 <- lm(AAPL.Vol ~ amznpvol + amznpvol2)
+#include quadratic - test cubic
+#summary(Q7)
+
+googpvol2 <- googpvol^2
+Q8 <- lm(AAPL.Vol ~ googpvol + googpvol2)
+#include quadratic - test cubic
+#summary(Q8)
+
+gspcpvol2 <- gspcpvol^2
+Q9 <- lm(AAPL.Vol ~ gspcpvol + gspcpvol2)
+#include quadratic - test cubic
+
+quad_mod <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + (googpvol2) + gspcpvol + (gspcpvol2))
+
+ols_step_backward_aic(quad_mod)
+
+next_mod_HO <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol)
+
+#summary(next_mod_HO)
+
+```
+
+```{r}
+
+next_mod_HO <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol)
+
+test_mod_combo <- lm(AAPL.Vol ~ vxazncls  + amznclose + (amznclose2) + gspcclose + (gspcclose2)  + (amznpvol2)  + (amznpvol*googpvol))
+
+summary(test_mod_combo)
+ols_step_backward_aic(test_mod_combo)
+```
+
+```{r}
+#uncentered vars
+AMZN.Close2 <- AMZN.Close^2
+GSPC.Close2 <- GSPC.Close^2
+AMZN.PVol2 <- AMZN.PVol^2
+best_model <- lm(AAPL.Vol ~  VXAZNCLS  + AMZN.Close + (AMZN.Close2) + GSPC.Close + (GSPC.Close2)  + (AMZN.PVol2)  + (AMZN.PVol*GOOG.PVol))
+summary(best_model)
+plot(best_model)
+
+```

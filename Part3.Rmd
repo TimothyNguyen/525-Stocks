@@ -120,50 +120,36 @@ AMZN.Ret = df$AMZN.Ret
 GOOG.Ret = df$GOOG.Ret
 GSPC.Ret = df$GSPC.Ret
 AAPL.Vol = df$AAPL.Vol
-X <- 
 ```
 
 ```{r}
-install.packages("olsrr")
+#install.packages("olsrr")
 library("olsrr")
-mod2 <- lm(AAPL.Vol ~ ., data=df)
-sub <- ols_step_best_subset(mod2)
-sub
-plot(sub)
 ```
 
 ```{r}
-install.packages("olsrr")
-library("olsrr")
-mod <- lm(AAPL.Vol ~ VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close+AMZN.PVol+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol, data=df)
-k <- ols_step_all_possible(mod)
-plot(k)
-k
-```
-
-```{r}
+mod <- lm(AAPL.Vol ~ ., data=df)
 sub <- ols_step_best_subset(mod)
 sub
 plot(sub)
 ```
 
 ```{r}
-k <- ols_step_forward_p(mod2, details = TRUE)
-plot(k)
-k
+View(sub)
 ```
 
 Forward Regression:
 
 ```{r}
-ols_step_forward_p(mod, details = TRUE)
+forward <- ols_step_forward_p(mod, details = TRUE)
+plot(forward)
 ```
 
 ## Stepwise Backward Regression
 
 ```{r}
 k <- ols_step_backward_p(mod, details=TRUE)
-k
+plot(k)
 ```
 
 ## Stepwise Regression
@@ -171,7 +157,24 @@ k
 Build regression model from a set of candidate predictor variables by entering and removing predictors based on p values, in a stepwise manner until there is no variable left to enter or remove any more. The model should include all the candidate predictor variables. If details is set to `TRUE`, each step is displayed.
 
 ```{r}
-ols_step_both_p(mod, details = TRUE)
+fwreg <- ols_step_both_p(mod, details = TRUE)
+plot(fwreg)
+```
+
+```{r}
+AMZN.Close3 <- AMZN.Close^3
+  
+```
+
+```{r}
+best_model <- lm(AAPL.Vol ~  VXAZNCLS + AMZN.Close + (AMZN.Close3) + GSPC.Close + (GSPC.Close3)  + (AMZN.PVol2)  + (AMZN.PVolGOOG.PVol4))
+#summary(best_model)
+#ols_step_backward_aic(best_model)
+
+date_model <- lm(AAPL.Vol ~  Date + Date2 + Date3 + VXAZNCLS + (GSPC.Close3)  + (AMZN.PVol2)  + (AMZN.PVolGOOG.PVol4))
+#summary(date_model)
+
+#ols_step_backward_aic(date_model)
 ```
 
 ```{r}
@@ -179,6 +182,34 @@ new_mod <- lm(AAPL.Vol ~ VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close+AMZN.PVol, data=df
 k <- ols_step_both_p(new_mod, details = TRUE)
 plot(k)
 k
+```
+
+```{r}
+'
+AAPL.Vol ~ AMZN.PVol + AMZN.PVol2 +GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GOOG.PVol4+GSPC.PVol+GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.PVol6+AMZN.Close+AMZN.Close2+AMZN.Close3+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS
+AMZN.PVol2 = AMZN.PVol^2
+
+AMZN.Close2 = AMZN.Close^2
+
+GSPC.Close2 = GSPC.Close^2
+AMZN.Close3 = AMZN.Close^3
+GSPC.Close3 = GSPC.Close^3
+
+GSPC.PVol2 = GSPC.PVol^2
+GSPC.PVol3 = GSPC.PVol^3
+GSPC.PVol4 = GSPC.PVol^4
+GSPC.PVol5 = GSPC.PVol^5
+
+GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5
+
+
+GOOG.PVol2 = GOOG.PVol^2
+GOOG.PVol3 = GOOG.PVol^3
+GOOG.PVol4 = GOOG.PVol^4
+AAPL.Ret
+
+GSPC.PVol6 = GSPC.PVol^6
+'
 ```
 
 ```{r}
