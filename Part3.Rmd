@@ -10,6 +10,7 @@ output:
 ```{r}
 library(readr)
 df <- read_csv("volatility.csv")
+data <- read_csv("volatility.csv")
 head(df)
 attach(df)
 ```
@@ -128,7 +129,7 @@ library("olsrr")
 ```
 
 ```{r}
-mod <- lm(AAPL.Vol ~ ., data=df)
+mod <- lm(AAPL.Vol~AAPL.Close+AMZN.Close+GOOG.Close+GSPC.Close+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol+AAPL.Ret+AMZN.Ret+GOOG.Ret+GSPC.Ret+VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close, data=df)
 sub <- ols_step_best_subset(mod)
 sub
 plot(sub)
@@ -141,15 +142,8 @@ View(sub)
 Forward Regression:
 
 ```{r}
-forward <- ols_step_forward_p(mod, details = TRUE)
+forward <- ols_step_forward_p(mod)
 plot(forward)
-```
-
-## Stepwise Backward Regression
-
-```{r}
-k <- ols_step_backward_p(mod, details=TRUE)
-plot(k)
 ```
 
 ## Stepwise Regression
@@ -157,31 +151,342 @@ plot(k)
 Build regression model from a set of candidate predictor variables by entering and removing predictors based on p values, in a stepwise manner until there is no variable left to enter or remove any more. The model should include all the candidate predictor variables. If details is set to `TRUE`, each step is displayed.
 
 ```{r}
-fwreg <- ols_step_both_p(mod, details = TRUE)
-plot(fwreg)
+ols_step_both_p(mod)
+plot(ols_step_both_p(mod))
 ```
 
 ```{r}
+ols_step_both_p(lm(AAPL.Vol~AMZN.Close+GSPC.Close+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol+AAPL.Ret+AMZN.Ret+GOOG.Ret+GSPC.Ret+VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close))
+```
+
+```{r}
+fullmod <- lm(AAPL.Vol ~ ., data = df)
+#summary(fullmod)
+
+#include predictors that pass at level 0.01
+mod <- lm(AAPL.Vol~VXAPLCLS+VXAZNCLS+AMZN.Close+GSPC.Close+AMZN.Ret+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol) 
+summary(mod)
+
+ols_step_both_p(mod)
+
+#new preliminary model 
+nmod <- lm(AAPL.Vol~VXAZNCLS+AMZN.Close+VXAPLCLS+GOOG.PVol+GSPC.PVol+GSPC.Close+AMZN.PVol+AAPL.PVol+GSPC.Ret) 
+
+#Collinearity Diagnostics
+ols_coll_diag(mod)
+
+#No VIF above 10, but some warrant further investigation: VXAZNCLS, AMZN.PVol, and GSPC.PVol 
+
+#could introduce higher order predictor, or interaction
+```
+
+```{r}
+#Interaction Terms 
+
+#step 1: corr matrix between predictors 
+corr_matrix = cbind(VXAPLCLS,VXAZNCLS,AMZN.Close,GSPC.Close,GSPC.Ret,AAPL.PVol,AMZN.PVol,GOOG.PVol,GSPC.PVol, Date)
+corr_matrix = cor(corr_matrix, method = c("pearson"))
+library(corrplot)
+corrplot(corr_matrix, method="number")
+```
+
+```{r}
+
+#step 2: center all predictors
+vxazncls <- VXAZNCLS - mean(VXAZNCLS)
+vxaplcls <- VXAPLCLS - mean(VXAPLCLS)
+amznclose <- AMZN.Close - mean(AMZN.Close)
+gspcclose <- GSPC.Close - mean(GSPC.Close)
+gspcret <- GSPC.Ret - mean(GSPC.Ret)
+aaplpvol <- AAPL.PVol - mean(AAPL.PVol)
+amznpvol <- AMZN.PVol - mean(AMZN.PVol)
+googpvol <- GOOG.PVol - mean(GOOG.PVol)
+gspcpvol <- GSPC.PVol - mean(GSPC.PVol)
+amznret <- AMZN.Ret - mean(AMZN.Ret)
+```
+
+```{r}
+#plots
+mod2 <- lm(AAPL.Vol~VXAPLCLS+VXAZNCLS+AMZN.Close+GSPC.Close+AMZN.Ret+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol) 
+plot(vxaplcls*vxazncls, mod$residuals)
+plot(amznclose*gspcclose, mod$residuals)
+
+plot(aaplpvol*amznpvol, mod$residuals)
+plot(aaplpvol*googpvol, mod$residuals)
+plot(aaplpvol*gspcpvol, mod$residuals)
+plot(amznpvol*googpvol, mod$residuals)
+plot(amznpvol*gspcpvol, mod$residuals)
+plot(googpvol*gspcpvol, mod$residuals)
+
+plot(aaplpvol*amznpvol*googpvol, mod$residuals)
+plot(aaplpvol*amznpvol*gspcpvol, mod$residuals)
+plot(amznpvol*googpvol*gspcpvol, mod$residuals)
+plot(aaplpvol*googpvol*gspcpvol, mod$residuals)
+
+plot(aaplpvol*amznpvol*googpvol*gspcpvol, mod$residuals) 
+
+```
+
+```{r}
+
+
+#add interaction terms of highly correlated variables 
+mod3 <- lm(AAPL.Vol~VXAPLCLS+VXAZNCLS+AMZN.Close+GSPC.Close+AMZN.Ret+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol) 
+
+
+mod_VIXint <- lm(AAPL.Vol~vxaplcls+vxazncls+(vxaplcls*vxazncls)+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol) 
+plot(vxaplcls*vxazncls, mod_VIXint$residuals)
+
+mod_CLOSEint <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+(amznclose*gspcclose)+amznret+aaplpvol+amznpvol+googpvol+gspcpvol)
+plot( amznclose*gspcclose, mod_CLOSEint$residuals)
+
+mod_PV1_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (aaplpvol*amznpvol))
+plot( aaplpvol*amznpvol, mod_PV1_int$residuals)
+
+mod_PV2_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (aaplpvol*googpvol)) 
+plot(aaplpvol*googpvol, mod_PV2_int$residuals)
+
+mod_PV3_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (aaplpvol*gspcpvol)) 
+plot( aaplpvol*gspcpvol, mod_PV3_int$residuals)
+
+mod_PV4_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (amznpvol*googpvol)) 
+plot(amznpvol*googpvol, mod_PV4_int$residuals)
+
+mod_PV5_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (amznpvol*gspcpvol)) 
+plot(amznpvol*gspcpvol, mod_PV5_int$residuals)
+
+mod_PV6_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (googpvol*gspcpvol)) 
+plot(googpvol*gspcpvol, mod_PV6_int$residuals)
+
+mod_PV8_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (googpvol*gspcpvol*amznpvol*aaplpvol)) 
+
+mod_ALL_int <- lm(AAPL.Vol~vxaplcls+vxazncls+(vxaplcls*vxazncls)+amznclose+gspcclose+(amznclose*gspcclose)+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (googpvol*gspcpvol*amznpvol*aaplpvol)) 
+
+anova(mod3, mod_VIXint)
+ 
+anova(mod3, mod_CLOSEint)
+
+anova(mod3, mod_PV1_int)
+
+anova(mod3, mod_PV2_int)
+
+anova(mod3, mod_PV3_int)
+
+anova(mod3, mod_PV4_int)
+
+anova(mod3, mod_PV5_int)
+
+anova(mod3, mod_PV6_int)
+
+anova(mod3, mod_PV8_int)
+
+anova(mod3, mod_ALL_int)
+
+anova(mod_PV8_int, mod_ALL_int)
+
+
+```
+
+------------------------------------------------------------------------
+
+```{r}
+#tests for higher order terms
+alpha = 0.05
+n = length(AAPL.Vol)
+Fstar = qf(1-alpha, 1, n-3)
+Fstar
+dfsse = n-3
+#using Lekha's code for ch 8 
+#set of predictors narrowed according to best subset selection 
+
+vxazncls2 <- vxazncls^2
+Q1 <- lm(AAPL.Vol ~ vxazncls + vxazncls2)
+#remains linear
+#summary(Q1)
+
+vxaplcls2<- vxaplcls^2
+Q2 <- lm(AAPL.Vol ~ vxaplcls + vxaplcls2)
+#remains linear
+#summary(Q2)
+
+amznclose2 <- amznclose^2
+Q3 <- lm(AAPL.Vol ~ amznclose + amznclose2)
+#include quadratic - test cubic
+#summary(Q3)
+
+gspcclose2 <- gspcclose^2
+Q4 <- lm(AAPL.Vol ~ gspcclose + gspcclose2)
+#include quadratic 
+#include cubic 
+#summary(Q4)
+
+amznpvol2 <- amznpvol^2
+Q7 <- lm(AAPL.Vol ~ amznpvol + amznpvol2)
+#include quadratic - test cubic
+#summary(Q7)
+
+googpvol2 <- googpvol^2
+Q8 <- lm(AAPL.Vol ~ googpvol + googpvol2)
+#include quadratic 
+#include cubic
+#include quartic 
+#summary(Q8)
+
+gspcpvol2 <- gspcpvol^2
+Q9 <- lm(AAPL.Vol ~ gspcpvol + gspcpvol2)
+#include quadratic - test cubic
+
+quad_mod <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + (googpvol2) + gspcpvol + (gspcpvol2))
+
+ols_step_backward_aic(quad_mod)
+
+next_mod_HO <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol)
+
+#summary(next_mod_HO)
+
+```
+
+```{r}
+next_mod_HO <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol)
+
+intermod1 <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol + amznpvol*googpvol)
+
+intermod2 <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol + amznpvol*gspcpvol)
+
+intermod3 <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol + gspcpvol*googpvol)
+
+anova(next_mod_HO, intermod1)
+
+anova(next_mod_HO, intermod2)
+
+anova(next_mod_HO, intermod3)
+
+
+#quick baskwards selection for which int terms could be dropped 
+
+update_mod<- ols_step_backward_aic(lm(AAPL.Vol ~ vxaplcls+vxazncls+amznclose+gspcclose+gspcret+aaplpvol+amznpvol+googpvol+gspcpvol + (googpvol*gspcpvol*amznpvol*aaplpvol)))
+
+```
+
+```{r}
+
+next_mod_HO <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol)
+
+test_mod_combo <- lm(AAPL.Vol ~ vxazncls  + amznclose + (amznclose2) + gspcclose + (gspcclose2)  + (amznpvol2)  + (amznpvol*googpvol))
+
+summary(test_mod_combo)
+ols_step_backward_aic(test_mod_combo)
+```
+
+# **HERE IS THE MAIN CODE:**
+
+```{r}
+#install.packages("olsrr")
+library("olsrr")
+#uncentered vars
+AMZN.Close2 <- AMZN.Close^2
 AMZN.Close3 <- AMZN.Close^3
+GSPC.Close2 <- GSPC.Close^2
+GSPC.Close3 <- GSPC.Close^3
+AMZN.PVol2 <- AMZN.PVol^2
+GOOG.PVol4 <- GOOG.PVol^4
+Date2<-Date^2
+GOOG.PVol2 <- GOOG.PVol^2
+GOOG.PVol3 <- GOOG.PVol^3
+GSPC.PVol2 <- GSPC.PVol^2
+GSPC.PVol3 <- GSPC.PVol^3
+GSPC.PVol4 <- GSPC.PVol^4
+GSPC.PVol5 <- GSPC.PVol^5
+GSPC.PVol6 <- GSPC.PVol^6
+GSPC.Close2 <- GSPC.Close^2
+GSPC.Close3 <- GSPC.Close^3
+interactterm = GOOG.PVol*GSPC.PVol*AMZN.PVol 
+
+#best_model <- lm(AAPL.Vol ~  VXAZNCLS + AMZN.Close + (AMZN.Close3) + GSPC.Close + (GSPC.Close3)  + (AMZN.PVol2)  + (AMZN.PVol*GOOG.PVol4))
+
+best_model <- lm(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol+ GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.PVol6+AMZN.Close+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS)
+
+#date_model <- lm(AAPL.Vol ~  Date + Date2 +  VXAZNCLS + GSPC.Close3  + AMZN.PVol2  + AMZN.PVol*GOOG.PVol4) 
+#date_model <- lm(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol+ GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.PVol6+AMZN.Close+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS+Date+Date2)
+date_model <- lm(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+ GSPC.PVol2+GSPC.PVol3+GSPC.PVol5+GSPC.PVol6+AMZN.Close+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS+Date+Date2)
+#combo_mod <- lm(AAPL.Vol~VXAPLCLS+AMZN.PVol+interactterm+Date+Date2+AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAZNCLS)
+combo_mod <- lm(AAPL.Vol~VXAPLCLS+(GOOG.PVol*AMZN.PVol)+Date+Date2+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAZNCLS)
+```
+
+```{r}
+#install.packages("DAAG")
+library(tidyverse)
+library(caret)
+data = df %>% mutate(AMZN.PVol2, AMZN.Close2, GSPC.Close2, AMZN.Close3, GSPC.Close3, GSPC.PVol2, GSPC.PVol3, GSPC.PVol4, GSPC.PVol5, GOOG.PVol2, GOOG.PVol3, GOOG.PVol4, GSPC.PVol6, Date2)
+
+set.seed(125) 
+
+
+# defining training control as
+# repeated cross-validation and 
+# value of K is 10 and repetation is 3 times
+train_control <- trainControl(method = "repeatedcv", 
+                            number = 20, repeats = 20)
   
+# training the model by assigning sales column
+# as target variable and rest other column
+# as independent varaible
+#model <- train(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+ GSPC.PVol2+GSPC.PVol3+GSPC.PVol5+GSPC.PVol6+AMZN.Close+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS+Date+Date2, data, method = "lm", trControl = train_control)
+  
+
+model <- train(AAPL.Vol~VXAPLCLS+AMZN.PVol+GOOG.PVol*GSPC.PVol*AMZN.PVol +Date+Date2+AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAZNCLS, data, method = "lm", trControl = train_control)
+#model = train(AAPL.Vol~VXAPLCLS+(GOOG.PVol*AMZN.PVol)+Date+Date2+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAZNCLS, data, method = "lm", trControl = train_control)
+
+# printing model performance metrics
+# along with other details
+model
+summary(model)
 ```
 
 ```{r}
-best_model <- lm(AAPL.Vol ~  VXAZNCLS + AMZN.Close + (AMZN.Close3) + GSPC.Close + (GSPC.Close3)  + (AMZN.PVol2)  + (AMZN.PVolGOOG.PVol4))
-#summary(best_model)
-#ols_step_backward_aic(best_model)
-
-date_model <- lm(AAPL.Vol ~  Date + Date2 + Date3 + VXAZNCLS + (GSPC.Close3)  + (AMZN.PVol2)  + (AMZN.PVolGOOG.PVol4))
-#summary(date_model)
-
-#ols_step_backward_aic(date_model)
+ols_step_backward_aic(combo_mod)
+best <- ols_step_both_p(combo_mod)
+plot(best)
 ```
 
 ```{r}
-new_mod <- lm(AAPL.Vol ~ VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close+AMZN.PVol, data=df)
-k <- ols_step_both_p(new_mod, details = TRUE)
-plot(k)
-k
+ols_step_backward_aic(date_model)
+best_date_p <- ols_step_both_p(date_model)
+plot(best_date_p)
+best_date_p
+```
+
+```{r}
+ols_step_backward_p(best_model)
+best_p <- ols_step_both_p(best_model)
+plot(best_p)
+best_p
+```
+
+```{r}
+ols_step_backward_aic(best_model)
+best_aic <- ols_step_both_aic(best_model)
+plot(best_aic)
+best_aic
+```
+
+```{r}
+summary(best_model)  
+```
+
+```{r}
+summary(date_model) 
+```
+
+```{r}
+plot(best_model)
+plot(date_model)
+#plot(nmod)
+```
+
+```{r}
+plot(AAPL.Vol, resid(best_model))
+plot(AAPL.Vol, resid(date_model))
 ```
 
 ```{r}
@@ -213,15 +518,43 @@ GSPC.PVol6 = GSPC.PVol^6
 ```
 
 ```{r}
-m <- new_mod
 inf_df <- data.frame(
-  "dffits" = dffits(m),
-  "cooks" = cooks.distance(m),
-  "dfb1" = dfbetas(m)[,1],
-  "dfb2" = dfbetas(m)[,2],
-  "dfb3" = dfbetas(m)[,3],
-  "dfb4" = dfbetas(m)[,4],
-  "dfb5" = dfbetas(m)[,5]
+  "dffits" = dffits(date_model),
+  "cooks" = cooks.distance(date_model),
+  "dfb1" = dfbetas(date_model)[,1],
+  "dfb2" = dfbetas(date_model)[,2],
+  "dfb3" = dfbetas(date_model)[,3],
+  "dfb4" = dfbetas(date_model)[,4],
+  "dfb5" = dfbetas(date_model)[,5],
+  "dfb6" = dfbetas(date_model)[,6],
+  "dfb7" = dfbetas(date_model)[,7],
+  "dfb8" = dfbetas(date_model)[,8],
+  "dfb9" = dfbetas(date_model)[,9],
+  "dfb10" = dfbetas(date_model)[,10],
+  "dfb11" = dfbetas(date_model)[,11],
+  "dfb12" = dfbetas(date_model)[,12],
+  "dfb13" = dfbetas(date_model)[,13],
+  "dfb14" = dfbetas(date_model)[,14],
+  "dfb15" = dfbetas(date_model)[,15],
+  "dfb16" = dfbetas(date_model)[,16],
+  "dfb17" = dfbetas(date_model)[,17]
+)
+plot(inf_df$cooks, col="red")
+```
+
+```{r}
+inf_df <- data.frame(
+  "dffits" = dffits(best_model),
+  "cooks" = cooks.distance(best_model),
+  "dfb1" = dfbetas(best_model)[,1],
+  "dfb2" = dfbetas(best_model)[,2],
+  "dfb3" = dfbetas(best_model)[,3],
+  "dfb4" = dfbetas(best_model)[,4],
+  "dfb5" = dfbetas(best_model)[,5],
+  "dfb6" = dfbetas(best_model)[,6],
+  "dfb7" = dfbetas(best_model)[,7],
+  "dfb8" = dfbetas(best_model)[,8],
+  "dfb9" = dfbetas(best_model)[,9]
 )
 plot(inf_df$cooks, type = "l",col="red")
 ```
