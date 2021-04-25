@@ -1,0 +1,11 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(readr)
+df <- read.csv("~/Documents/Stats 525/IE project/volatility.csv")
+head(df)
+attach(df)
+```

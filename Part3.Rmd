@@ -1,7 +1,100 @@
 ---
-title: "Part 3: Stocks Project"
-output: html_notebook
+title: 'Part 3: Stocks Project'
+output:
+  html_document:
+    df_print: paged
 ---
+
+**Chapter 3: Single Hypothesis**
+
+```{r}
+library(readr)
+df <- read_csv("volatility.csv")
+data <- read_csv("volatility.csv")
+head(df)
+attach(df)
+```
+
+Beta1 hypothesis tests for linearity
+
+Null Hypothesis: Beta1 = 0; no relation between X and Y
+
+Construct a 95% Confidence Interval for the value of Beta1
+
+If the interval contains zero, then there is no linear relation
+
+```{r}
+mod <- lm(AAPL.Vol ~ AAPL.PVol)
+CI_b11 = confint(mod)[2,]
+CI_b11
+
+mod <- lm(AAPL.Vol ~ AMZN.PVol)
+CI_b12 = confint(mod)[2,]
+CI_b12
+
+mod <- lm(AAPL.Vol ~ GOOG.PVol)
+CI_b13 = confint(mod)[2,]
+CI_b13
+
+mod <- lm(AAPL.Vol ~ GSPC.PVol)
+CI_b14 = confint(mod)[2,]
+CI_b14
+
+mod <- lm(AAPL.Vol ~ AAPL.Close)
+CI_b15 = confint(mod)[2,]
+CI_b15
+
+mod <- lm(AAPL.Vol ~ AMZN.Close)
+CI_b16 = confint(mod)[2,]
+CI_b16
+
+mod <- lm(AAPL.Vol ~ GOOG.Close)
+CI_b17 = confint(mod)[2,]
+CI_b17
+
+mod <- lm(AAPL.Vol ~ GSPC.Close)
+CI_b18 = confint(mod)[2,]
+CI_b18
+
+mod <- lm(AAPL.Vol ~ VXAPLCLS)
+CI_b19 = confint(mod)[2,]
+CI_b19
+
+mod <- lm(AAPL.Vol ~ VXAZNCLS)
+CI_b110 = confint(mod)[2,]
+CI_b110
+
+mod <- lm(AAPL.Vol ~ VXGOGCLS)
+CI_b111 = confint(mod)[2,]
+CI_b111
+
+mod <- lm(AAPL.Vol ~ VIX.Close)
+CI_b112 = confint(mod)[2,]
+CI_b112
+
+mod <- lm(AAPL.Vol ~ AAPL.Ret)
+CI_b113 = confint(mod)[2,]
+CI_b113
+
+mod <- lm(AAPL.Vol ~ AMZN.Ret)
+CI_b114 = confint(mod)[2,]
+CI_b114
+
+mod <- lm(AAPL.Vol ~ GOOG.Ret)
+CI_b115 = confint(mod)[2,]
+CI_b115
+
+mod <- lm(AAPL.Vol ~ GSPC.Ret)
+CI_b116 = confint(mod)[2,]
+CI_b116
+
+```
+
+Although the beta1 value for several of the linear regressions was very close to zero, the only variable for which we can be statistically certain has NO linear relation with AAPL.Vol is GOOG.Ret.
+
+Pvol predictors have positive linear relation. Close predictors have negative linear relation with slope very close to zero. VIX predictors have a positive linear relation with slope very close to zero. Return variables have mostly negative relations, but GOOG.Ret has no linear relation with AAPL.Vol.
+
+Chapter 9
 
 ```{r}
 rm(list=ls())
@@ -33,29 +126,24 @@ AAPL.Vol = df$AAPL.Vol
 ```{r}
 #install.packages("olsrr")
 library("olsrr")
-mod <- lm(AAPL.Vol ~ VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close+AMZN.PVol+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol, data=df)
-k <- ols_step_all_possible(mod)
-plot(k)
-k
 ```
 
 ```{r}
+mod <- lm(AAPL.Vol~AAPL.Close+AMZN.Close+GOOG.Close+GSPC.Close+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol+AAPL.Ret+AMZN.Ret+GOOG.Ret+GSPC.Ret+VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close+Date, data=df)
 sub <- ols_step_best_subset(mod)
 sub
 plot(sub)
 ```
 
+```{r}
+View(sub)
+```
+
 Forward Regression:
 
 ```{r}
-ols_step_forward_p(mod, details = TRUE)
-```
-
-## Stepwise Backward Regression
-
-```{r}
-k <- ols_step_backward_p(mod, details=TRUE)
-k
+forward <- ols_step_forward_p(mod)
+plot(forward)
 ```
 
 ## Stepwise Regression
@@ -63,28 +151,1358 @@ k
 Build regression model from a set of candidate predictor variables by entering and removing predictors based on p values, in a stepwise manner until there is no variable left to enter or remove any more. The model should include all the candidate predictor variables. If details is set to `TRUE`, each step is displayed.
 
 ```{r}
-ols_step_both_p(mod, details = TRUE)
-```
-
-**Hello World**
-
-```{r}
-new_mod <- lm(AAPL.Vol ~ VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close+AMZN.PVol, data=df)
-k <- ols_step_both_p(new_mod, details = TRUE)
-plot(k)
-k
+ols_step_both_p(mod)
+plot(ols_step_both_p(mod))
 ```
 
 ```{r}
-m <- new_mod
+fullmod <- lm(AAPL.Vol ~ ., data = df)
+#summary(fullmod)
+
+#include predictors that pass at level 0.01
+summary(mod)
+
+ols_step_both_p(mod)
+
+#new preliminary model 
+nmod <- lm(AAPL.Vol~VXAZNCLS+AMZN.Close+VXAPLCLS+GOOG.PVol+GSPC.PVol+GSPC.Close+AMZN.PVol+AAPL.PVol+GSPC.Ret) 
+
+#Collinearity Diagnostics
+ols_coll_diag(mod)
+
+#No VIF above 10, but some warrant further investigation: VXAZNCLS, AMZN.PVol, and GSPC.PVol 
+
+#could introduce higher order predictor, or interaction
+```
+
+```{r}
+#Interaction Terms 
+
+#step 1: corr matrix between predictors 
+corr_matrix = cbind(VXAPLCLS,VXAZNCLS,AMZN.Close,GSPC.Close,GSPC.Ret,AAPL.PVol,AMZN.PVol,GOOG.PVol,GSPC.PVol, Date)
+corr_matrix = cor(corr_matrix, method = c("pearson"))
+library(corrplot)
+corrplot(corr_matrix, method="number")
+```
+
+```{r}
+
+#step 2: center all predictors
+vxazncls <- VXAZNCLS - mean(VXAZNCLS)
+vxaplcls <- VXAPLCLS - mean(VXAPLCLS)
+amznclose <- AMZN.Close - mean(AMZN.Close)
+gspcclose <- GSPC.Close - mean(GSPC.Close)
+gspcret <- GSPC.Ret - mean(GSPC.Ret)
+aaplpvol <- AAPL.PVol - mean(AAPL.PVol)
+amznpvol <- AMZN.PVol - mean(AMZN.PVol)
+googpvol <- GOOG.PVol - mean(GOOG.PVol)
+gspcpvol <- GSPC.PVol - mean(GSPC.PVol)
+amznret <- AMZN.Ret - mean(AMZN.Ret)
+```
+
+```{r}
+#plots
+mod2 <- lm(AAPL.Vol~VXAPLCLS+VXAZNCLS+AMZN.Close+GSPC.Close+AMZN.Ret+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol) 
+plot(vxaplcls*vxazncls, mod$residuals)
+plot(amznclose*gspcclose, mod$residuals)
+
+plot(aaplpvol*amznpvol, mod$residuals)
+plot(aaplpvol*googpvol, mod$residuals)
+plot(aaplpvol*gspcpvol, mod$residuals)
+plot(amznpvol*googpvol, mod$residuals)
+plot(amznpvol*gspcpvol, mod$residuals)
+plot(googpvol*gspcpvol, mod$residuals)
+
+plot(aaplpvol*amznpvol*googpvol, mod$residuals)
+plot(aaplpvol*amznpvol*gspcpvol, mod$residuals)
+plot(amznpvol*googpvol*gspcpvol, mod$residuals)
+plot(aaplpvol*googpvol*gspcpvol, mod$residuals)
+
+plot(aaplpvol*amznpvol*googpvol*gspcpvol, mod$residuals) 
+
+```
+
+```{r}
+
+
+#add interaction terms of highly correlated variables 
+mod3 <- lm(AAPL.Vol~VXAPLCLS+VXAZNCLS+AMZN.Close+GSPC.Close+AMZN.Ret+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol) 
+
+
+mod_VIXint <- lm(AAPL.Vol~vxaplcls+vxazncls+(vxaplcls*vxazncls)+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol) 
+plot(vxaplcls*vxazncls, mod_VIXint$residuals)
+
+mod_CLOSEint <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+(amznclose*gspcclose)+amznret+aaplpvol+amznpvol+googpvol+gspcpvol)
+plot( amznclose*gspcclose, mod_CLOSEint$residuals)
+
+mod_PV1_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (aaplpvol*amznpvol))
+plot( aaplpvol*amznpvol, mod_PV1_int$residuals)
+
+mod_PV2_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (aaplpvol*googpvol)) 
+plot(aaplpvol*googpvol, mod_PV2_int$residuals)
+
+mod_PV3_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (aaplpvol*gspcpvol)) 
+plot( aaplpvol*gspcpvol, mod_PV3_int$residuals)
+
+mod_PV4_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (amznpvol*googpvol)) 
+plot(amznpvol*googpvol, mod_PV4_int$residuals)
+
+mod_PV5_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (amznpvol*gspcpvol)) 
+plot(amznpvol*gspcpvol, mod_PV5_int$residuals)
+
+mod_PV6_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (googpvol*gspcpvol)) 
+plot(googpvol*gspcpvol, mod_PV6_int$residuals)
+
+mod_PV8_int <- lm(AAPL.Vol~vxaplcls+vxazncls+amznclose+gspcclose+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (googpvol*gspcpvol*amznpvol*aaplpvol)) 
+
+mod_ALL_int <- lm(AAPL.Vol~vxaplcls+vxazncls+(vxaplcls*vxazncls)+amznclose+gspcclose+(amznclose*gspcclose)+amznret+aaplpvol+amznpvol+googpvol+gspcpvol + (googpvol*gspcpvol*amznpvol*aaplpvol)) 
+
+anova(mod3, mod_VIXint)
+ 
+anova(mod3, mod_CLOSEint)
+
+anova(mod3, mod_PV1_int)
+
+anova(mod3, mod_PV2_int)
+
+anova(mod3, mod_PV3_int)
+
+anova(mod3, mod_PV4_int)
+
+anova(mod3, mod_PV5_int)
+
+anova(mod3, mod_PV6_int)
+
+anova(mod3, mod_PV8_int)
+
+anova(mod3, mod_ALL_int)
+
+anova(mod_PV8_int, mod_ALL_int)
+
+
+```
+
+------------------------------------------------------------------------
+
+```{r}
+#tests for higher order terms
+alpha = 0.05
+n = length(AAPL.Vol)
+Fstar = qf(1-alpha, 1, n-3)
+Fstar
+dfsse = n-3
+#using Lekha's code for ch 8 
+#set of predictors narrowed according to best subset selection 
+
+vxazncls2 <- vxazncls^2
+Q1 <- lm(AAPL.Vol ~ vxazncls + vxazncls2)
+#remains linear
+#summary(Q1)
+
+vxaplcls2<- vxaplcls^2
+Q2 <- lm(AAPL.Vol ~ vxaplcls + vxaplcls2)
+#remains linear
+#summary(Q2)
+
+amznclose2 <- amznclose^2
+Q3 <- lm(AAPL.Vol ~ amznclose + amznclose2)
+#include quadratic - test cubic
+#summary(Q3)
+
+gspcclose2 <- gspcclose^2
+Q4 <- lm(AAPL.Vol ~ gspcclose + gspcclose2)
+#include quadratic 
+#include cubic 
+#summary(Q4)
+
+amznpvol2 <- amznpvol^2
+Q7 <- lm(AAPL.Vol ~ amznpvol + amznpvol2)
+#include quadratic - test cubic
+#summary(Q7)
+
+googpvol2 <- googpvol^2
+Q8 <- lm(AAPL.Vol ~ googpvol + googpvol2)
+#include quadratic 
+#include cubic
+#include quartic 
+#summary(Q8)
+
+gspcpvol2 <- gspcpvol^2
+Q9 <- lm(AAPL.Vol ~ gspcpvol + gspcpvol2)
+#include quadratic - test cubic
+
+quad_mod <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + (googpvol2) + gspcpvol + (gspcpvol2))
+
+ols_step_backward_aic(quad_mod)
+
+next_mod_HO <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol)
+
+#summary(next_mod_HO)
+
+```
+
+```{r}
+next_mod_HO <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol)
+
+intermod1 <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol + amznpvol*googpvol)
+
+intermod2 <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol + amznpvol*gspcpvol)
+
+intermod3 <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol + gspcpvol*googpvol)
+
+anova(next_mod_HO, intermod1)
+
+anova(next_mod_HO, intermod2)
+
+anova(next_mod_HO, intermod3)
+
+
+#quick baskwards selection for which int terms could be dropped 
+
+update_mod<- ols_step_backward_aic(lm(AAPL.Vol ~ vxaplcls+vxazncls+amznclose+gspcclose+gspcret+aaplpvol+amznpvol+googpvol+gspcpvol + (googpvol*gspcpvol*amznpvol*aaplpvol)))
+
+```
+
+```{r}
+next_mod_HO <- lm(AAPL.Vol ~ vxazncls + vxaplcls + amznclose + (amznclose2) + gspcclose + (gspcclose2) + amznpvol + (amznpvol2) + googpvol + gspcpvol)
+
+test_mod_combo <- lm(AAPL.Vol ~ vxazncls  + amznclose + (amznclose2) + gspcclose + (gspcclose2)  + (amznpvol2)  + (amznpvol*googpvol))
+
+summary(test_mod_combo)
+ols_step_backward_aic(test_mod_combo)
+```
+
+# **HERE IS THE MAIN CODE:**
+
+```{r}
+#install.packages("olsrr")
+library("olsrr")
+#uncentered vars
+AMZN.Close2 <- AMZN.Close^2
+AMZN.Close3 <- AMZN.Close^3
+GSPC.Close2 <- GSPC.Close^2
+GSPC.Close3 <- GSPC.Close^3
+AMZN.PVol2 <- AMZN.PVol^2
+GOOG.PVol4 <- GOOG.PVol^4
+Date2<-Date^2
+GOOG.PVol2 <- GOOG.PVol^2
+GOOG.PVol3 <- GOOG.PVol^3
+GSPC.PVol2 <- GSPC.PVol^2
+GSPC.PVol3 <- GSPC.PVol^3
+GSPC.PVol4 <- GSPC.PVol^4
+GSPC.PVol5 <- GSPC.PVol^5
+GSPC.PVol6 <- GSPC.PVol^6
+GSPC.Close2 <- GSPC.Close^2
+GSPC.Close3 <- GSPC.Close^3
+interactterm = GOOG.PVol*GSPC.PVol*AMZN.PVol 
+
+#best_model <- lm(AAPL.Vol ~  VXAZNCLS + AMZN.Close + (AMZN.Close3) + GSPC.Close + (GSPC.Close3)  + (AMZN.PVol2)  + (AMZN.PVol*GOOG.PVol4))
+
+best_model <- lm(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol+ GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.PVol6+AMZN.Close+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS)
+
+#date_model <- lm(AAPL.Vol ~  Date + Date2 +  VXAZNCLS + GSPC.Close3  + AMZN.PVol2  + AMZN.PVol*GOOG.PVol4) 
+#date_model <- lm(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol+ GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.PVol6+AMZN.Close+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS+Date+Date2)
+date_model <- lm(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+ GSPC.PVol2+GSPC.PVol3+GSPC.PVol5+GSPC.PVol6+AMZN.Close+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS+Date+Date2)
+
+lekha <- AAPL.Vol~VXAPLCLS+AMZN.PVol+(GOOG.PVol*GSPC.PVol*AMZN.PVol )+Date+Date2+AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAZNCLS
+theresa <- AAPL.Vol~VXAPLCLS+(GOOG.PVol*AMZN.PVol)+Date+Date2+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAZNCLS
+
+tim <- AAPL.Vol~VXAPLCLS+AMZN.PVol+(GOOG.PVol*GSPC.PVol*AMZN.PVol )+Date+Date2+AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol5+GSPC.Close+VXAZNCLS
+
+
+#combo_mod <- lm(theresa)
+#combo_mod <- lm(lekha)
+combo_mod <- lm(tim)
+summary(combo_mod)
+```
+
+```{r}
+anova(combo_mod)
+```
+
+```{r}
+#install.packages("DAAG")
+library(tidyverse)
+library(caret)
+data = df %>% mutate(AMZN.PVol2, AMZN.Close2, GSPC.Close2, AMZN.Close3, GSPC.Close3, GSPC.PVol2, GSPC.PVol3, GSPC.PVol4, GSPC.PVol5, GOOG.PVol2, GOOG.PVol3, GOOG.PVol4, GSPC.PVol6, Date2)
+
+set.seed(125) 
+
+# defining training control as
+# repeated cross-validation and 
+# value of K is 10 and repetation is 3 times
+train_control <- trainControl(method = "repeatedcv", 
+                            number = 10, repeats = 20)
+  
+# training the model by assigning sales column
+# as target variable and rest other column
+# as independent varaible
+#model <- train(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+ GSPC.PVol2+GSPC.PVol3+GSPC.PVol5+GSPC.PVol6+AMZN.Close+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS+Date+Date2, data, method = "lm", trControl = train_control)
+
+#model <- train(lekha, data, method = "lm", trControl = train_control)
+#model = train(theresa, data, method = "lm", trControl = train_control)
+model <- train(tim, data, method = "lm", trControl = train_control)
+
+# printing model performance metrics
+# along with other details
+model
+summary(model)
+MSPR=sum(summary(model)$residuals^2)/503   
+MSPR
+```
+
+```{r}
+ols_step_backward_aic(combo_mod)
+best <- ols_step_both_p(combo_mod)
+plot(best)
+best
+```
+
+```{r}
+ols_step_backward_aic(date_model)
+best_date_p <- ols_step_both_p(date_model)
+plot(best_date_p)
+best_date_p
+```
+
+```{r}
+ols_step_backward_p(best_model)
+best_p <- ols_step_both_p(best_model)
+plot(best_p)
+best_p
+```
+
+```{r}
+ols_step_backward_aic(best_model)
+best_aic <- ols_step_both_aic(best_model)
+plot(best_aic)
+best_aic
+```
+
+```{r}
+summary(combo_mod)  
+```
+
+```{r}
+summary(date_model) 
+```
+
+```{r}
+plot(best_model)
+plot(date_model)
+#plot(nmod)
+```
+
+```{r}
+plot(AAPL.Vol, resid(combo_mod))
+#plot(AAPL.Vol, resid(date_model))
+```
+
+```{r}
+'
+AAPL.Vol ~ AMZN.PVol + AMZN.PVol2 +GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GOOG.PVol4+GSPC.PVol+GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.PVol6+AMZN.Close+AMZN.Close2+AMZN.Close3+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS
+AMZN.PVol2 = AMZN.PVol^2
+
+AMZN.Close2 = AMZN.Close^2
+
+GSPC.Close2 = GSPC.Close^2
+AMZN.Close3 = AMZN.Close^3
+GSPC.Close3 = GSPC.Close^3
+
+GSPC.PVol2 = GSPC.PVol^2
+GSPC.PVol3 = GSPC.PVol^3
+GSPC.PVol4 = GSPC.PVol^4
+GSPC.PVol5 = GSPC.PVol^5
+
+GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5
+
+
+GOOG.PVol2 = GOOG.PVol^2
+GOOG.PVol3 = GOOG.PVol^3
+GOOG.PVol4 = GOOG.PVol^4
+AAPL.Ret
+
+GSPC.PVol6 = GSPC.PVol^6
+'
+```
+
+```{r}
 inf_df <- data.frame(
-  "dffits" = dffits(m),
-  "cooks" = cooks.distance(m),
-  "dfb1" = dfbetas(m)[,1],
-  "dfb2" = dfbetas(m)[,2],
-  "dfb3" = dfbetas(m)[,3],
-  "dfb4" = dfbetas(m)[,4],
-  "dfb5" = dfbetas(m)[,5]
+  "dffits" = dffits(date_model),
+  "cooks" = cooks.distance(date_model),
+  "dfb1" = dfbetas(date_model)[,1],
+  "dfb2" = dfbetas(date_model)[,2],
+  "dfb3" = dfbetas(date_model)[,3],
+  "dfb4" = dfbetas(date_model)[,4],
+  "dfb5" = dfbetas(date_model)[,5],
+  "dfb6" = dfbetas(date_model)[,6],
+  "dfb7" = dfbetas(date_model)[,7],
+  "dfb8" = dfbetas(date_model)[,8],
+  "dfb9" = dfbetas(date_model)[,9],
+  "dfb10" = dfbetas(date_model)[,10],
+  "dfb11" = dfbetas(date_model)[,11],
+  "dfb12" = dfbetas(date_model)[,12],
+  "dfb13" = dfbetas(date_model)[,13],
+  "dfb14" = dfbetas(date_model)[,14],
+  "dfb15" = dfbetas(date_model)[,15],
+  "dfb16" = dfbetas(date_model)[,16],
+  "dfb17" = dfbetas(date_model)[,17]
+)
+plot(inf_df$cooks, col="red")
+```
+
+```{r}
+inf_df <- data.frame(
+  "dffits" = dffits(best_model),
+  "cooks" = cooks.distance(best_model),
+  "dfb1" = dfbetas(best_model)[,1],
+  "dfb2" = dfbetas(best_model)[,2],
+  "dfb3" = dfbetas(best_model)[,3],
+  "dfb4" = dfbetas(best_model)[,4],
+  "dfb5" = dfbetas(best_model)[,5],
+  "dfb6" = dfbetas(best_model)[,6],
+  "dfb7" = dfbetas(best_model)[,7],
+  "dfb8" = dfbetas(best_model)[,8],
+  "dfb9" = dfbetas(best_model)[,9]
 )
 plot(inf_df$cooks, type = "l",col="red")
 ```
+
+**Chapter 8:**
+
+For the full regression,the adjusted R-squared of the full regression was 0.5836, the p-value of variables VIX.Close,AAPL.Close,VXGOGCLS,GOOG.Close,AAPL.Ret,GOOG.Ret and GSPC.Ret are all less than 0.05, so we may wish to know whether these variables can be dropped from the full model. For level of significance alpha = 0.05, we require F(0.95; 486, 493) = 1.1604. Since F\* = 1.5935 \>= 1.1604and the p-value of F is 0.1349 \> 0.05, we conclude H~0~ , that variables VIX.Close, AAPL.Close, VXGOGCLS, GOOG.Close, AAPL.Ret, GOOG.Ret and GSPC.Ret should be dropped from the full regression model.
+
+```{r}
+volatility_df <- read.csv("volatility.csv")
+volatility_df$Date<-NULL
+fit1<-lm(AAPL.Vol~.,volatility_df)
+summary(fit1)
+fit2<-lm(AAPL.Vol~VXAPLCLS+VXAZNCLS+AMZN.Close+GSPC.Close+AMZN.Ret+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol,volatility_df)
+summary(fit2)
+anova(fit1,fit2)
+par(mfrow=c(1,2))
+plot(fit1,which=1)
+plot(fit2,which=1)
+```
+
+**Lekha - Chapter 8 (Transformation Part)**
+
+Importing required data:
+
+```{r}
+rm(list=ls())
+library(corrplot)
+df <- read.csv(file="volatility.csv")
+head(df)
+
+
+AAPL.PVol = df$AAPL.PVol
+GOOG.PVol = df$GOOG.PVol
+AMZN.PVol = df$AMZN.PVol
+GSPC.PVol = df$GSPC.PVol
+VIX.Close = df$VIX.Close
+AAPL.Close = df$AAPL.Close
+VXAPLCLS = df$VXAPLCLS
+VXAZNCLS = df$VXAZNCLS
+VXGOGCLS = df$VXGOGCLS 
+GOOG.Close = df$GOOG.Close
+AMZN.Close = df$AMZN.Close
+GSPC.Close = df$GSPC.Close 
+Date = df$Date
+AAPL.Ret = df$AAPL.Ret
+AMZN.Ret = df$AMZN.Ret
+GOOG.Ret = df$GOOG.Ret
+GSPC.Ret = df$GSPC.Ret
+AAPL.Vol = df$AAPL.Vol
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+We will check for higher-order terms and whether they're necessary to add or not by centering the predictor variables for each case, and performing required tests on these centered predictor variables and Y. For each one, we considered $\alpha = 0.05$.
+
+```{r}
+Y = AAPL.Vol
+```
+
+Starting with:
+
+# AAPL.Vol vs AAPL.PVol:
+
+```{r}
+currX = AAPL.PVol
+n = length(AAPL.Vol)
+Xbar = sum(AAPL.PVol)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between AAPL.PVol and AAPL.Vol, but now doing the same when AAPL.PVol is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = 0.00011380 / (0.0171732/dfsse)
+
+#or could be taken from ANOVA table
+Fobs = curranova[2,4]
+Fobs
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is less than critical value, so we conclude that we fail to reject the null hypothesis.
+
+Hence, in the case of predictor variable AAPL.Vol, we can use linear model of order 1, and not add its square.
+
+Now, to de-center our function, we replace x by $X - \bar{X}$. Since we anyway will not consider the quadratic term, we can just state the linear regression equation as it is for Y and X:
+
+```{r}
+mod = lm(Y ~ currX)
+mod$coefficients
+```
+
+$$\hat{Y} = 0.01033 + 0.3643X_1$$
+
+# AAPL.Vol vs AMZN.PVol higher order:
+
+```{r}
+currX = AMZN.PVol
+n = length(AAPL.Vol)
+Xbar = sum(AMZN.PVol)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between AMZN.PVol and AAPL.Vol, but now doing the same when AMZN.PVol is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is greater than critical value, so we conclude that we reject the null hypothesis.
+
+Hence, the quadratic term of AMZN.PVol is significant.
+
+# AAPL.Vol vs GOOG.PVol higher order:
+
+```{r}
+currX = GOOG.PVol
+n = length(AAPL.Vol)
+Xbar = sum(GOOG.PVol)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between GOOG.PVol and AAPL.Vol, but now doing the same when GOOG.PVol is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is greater than critical value, so we conclude that we reject the null hypothesis.
+
+Hence, the quadratic term $X^2$ in the case of GOOG.PVol is significant.
+
+# AAPL.Vol vs GSPC.PVol higher order:
+
+```{r}
+currX = GSPC.PVol
+n = length(AAPL.Vol)
+Xbar = sum(GSPC.PVol)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between GSPC.PVol and AAPL.Vol, but now doing the same when GSPC.PVol is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is greater than critical value, so we conclude that we reject the null hypothesis.
+
+Hence, the quadratic term for GSPC.PVol is significant.
+
+# AAPL.Vol vs AAPL.Close higher order:
+
+```{r}
+currX = AAPL.Close
+n = length(AAPL.Vol)
+Xbar = sum(AAPL.Close)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between AAPL.Close and AAPL.Vol, but now doing the same when AAPL.Close is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is less than critical value, so we conclude that we fail to reject the null hypothesis.
+
+Hence, in the case of AAPL.Close, its quadratic term isn't significant.
+
+# AAPL.Vol vs AMZN.Close higher order:
+
+```{r}
+currX = AMZN.Close
+n = length(AAPL.Vol)
+Xbar = sum(AMZN.Close)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between AMZN.Close and AAPL.Vol, but now doing the same when AMZN.Close is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is greater than critical value, so we conclude that we fail to reject the null hypothesis.
+
+Hence, the quadratic term $X^2$ for AMZN.Close is significant
+
+# AAPL.Vol vs GOOG.Close higher order:
+
+```{r}
+currX = GOOG.Close
+n = length(AAPL.Vol)
+Xbar = sum(GOOG.Close)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between GOOG.Close and AAPL.Vol, but now doing the same when GOOG.Close is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is less than critical value, so we conclude that we fail to reject the null hypothesis.
+
+Hence, the quadratic term $X^2$ for GOOG.Close is not significant.
+
+# AAPL.Vol vs GSPC.Close higher order:
+
+```{r}
+currX = GSPC.Close
+n = length(AAPL.Vol)
+Xbar = sum(GSPC.Close)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between GSPC.Close and AAPL.Vol, but now doing the same when GSPC.Close is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is greater than critical value, so we conclude that we reject the null hypothesis.
+
+Hence, the quadratic term $X^2$ for GSPC.Close is significant.
+
+# AAPL.Vol vs VXAPLCLS higher order:
+
+```{r}
+currX = VXAPLCLS
+n = length(AAPL.Vol)
+Xbar = sum(VXAPLCLS)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between VXAPLCLS and AAPL.Vol, but now doing the same when VXAPLCLS is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is less than critical value, so we conclude that we fail to reject the null hypothesis.
+
+Hence, the quadratic term $X^2$ for VXAPLCLS is not significant.
+
+# AAPL.Vol vs VXAZNCLS higher order:
+
+```{r}
+currX = VXAZNCLS
+n = length(AAPL.Vol)
+Xbar = sum(VXAZNCLS)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between VXAZNCLS and AAPL.Vol, but now doing the same when VXAZNCLS is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is less than critical value, so we conclude that we fail to reject the null hypothesis.
+
+Hence, the quadratic term $X^2$ for VXAZNCLS is not significant.
+
+# AAPL.Vol vs VXGOGCLS higher order:
+
+```{r}
+currX = VXGOGCLS
+n = length(AAPL.Vol)
+Xbar = sum(VXGOGCLS)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between VXGOGCLS and AAPL.Vol, but now doing the same when VXGOGCLS is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is greater than critical value, so we conclude that we fail to reject the null hypothesis.
+
+Hence, the quadratic term $X^2$ for VXGOGCLS is significant.
+
+# AAPL.Vol vs VIX.Close higher order:
+
+```{r}
+currX = VIX.Close
+n = length(AAPL.Vol)
+Xbar = sum(VIX.Close)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between VIX.Close and AAPL.Vol, but now doing the same when VIX.Close is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is less than critical value, so we conclude that we fail to reject the null hypothesis.
+
+Hence, the quadratic term $X^2$ for VIX.Close is not significant.
+
+# AAPL.Vol vs AAPL.Ret higher order:
+
+```{r}
+currX = AAPL.Ret
+n = length(AAPL.Vol)
+Xbar = sum(AAPL.Ret)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between AAPL.Ret and AAPL.Vol, but now doing the same when AAPL.Ret is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is greater than critical value, so we conclude that we fail to reject the null hypothesis.
+
+Hence, the quadratic term $X^2$ for AAPL.Ret is significant
+
+# AAPL.Vol vs AMZN.Ret higher order:
+
+```{r}
+currX = AMZN.Ret
+n = length(AAPL.Vol)
+Xbar = sum(AMZN.Ret)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between AMZN.Ret and AAPL.Vol, but now doing the same when AMZN.Ret is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is *much* greater than critical value, so we conclude that we reject the null hypothesis.
+
+Hence, the quadratic term $X^2$ for AMZN.Ret is quite significant.
+
+# AAPL.Vol vs GSPC.Ret higher order:
+
+```{r}
+currX = GSPC.Ret
+n = length(AAPL.Vol)
+Xbar = sum(GSPC.Ret)/n
+
+#centering predictor variable
+
+smallx = currX - Xbar
+
+xsquare = smallx*smallx
+
+currmod = lm(Y ~ smallx+xsquare)
+summary(currmod)
+```
+
+Now plotting Y against X only:
+
+```{r}
+par(lwd = 3, cex.axis = 1.5, cex.lab = 1.5, mar = c(5,5,2,2))
+plot(Y~smallx, pch = 20, bty = "n", lwd = 5)
+
+```
+
+The graph doesn't seem to be parabolic, so it doesn't indicate interaction term at first glance.
+
+We found from Part 2, that there is a relation between GSPC.Ret and AAPL.Vol, but now doing the same when GSPC.Ret is centered, we will test if there is any relation at all: \* Null hypothesis $H_0: \beta_2 = 0$ \* Alternate hypothesis $H_A: \beta_2 \neq 0$
+
+Test statistic is $F_{obs} = \frac{MSR}{MSE} = \frac{SSR(x^2|x)/1}{SSE(x,x^2)/n-3}$
+
+```{r}
+curranova = anova(currmod)
+curranova
+dfsse = n-3
+
+## SSR is second value in Mean Sq column of the anova table
+## SSE is bottom most value in Sum Sq column
+Fobs = curranova[2,3] / ((curranova[3,2])/dfsse)
+Fobs
+#or could be taken from ANOVA table
+Fobs2 = curranova[2,4]
+Fobs2
+```
+
+Our critical value is:
+
+```{r}
+alpha = 0.05
+
+Fstar = qf(1 - alpha, 1, n-3)
+Fstar
+```
+
+Our test statistic value is quite greater than critical value, so we conclude that we reject the null hypothesis.
+
+Hence, the quadratic term $X^2$ for GSPC.Ret is significant.
