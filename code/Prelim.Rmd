@@ -1,0 +1,373 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+rm(list=ls())
+library(corrplot)
+df <- read.csv(file="./volatility.csv")
+head(df)
+
+
+AAPL.PVol = df$AAPL.PVol
+GOOG.PVol = df$GOOG.PVol
+AMZN.PVol = df$AMZN.PVol
+GSPC.PVol = df$GSPC.PVol
+VIX.Close = df$VIX.Close
+AAPL.Close = df$AAPL.Close
+VXAPLCLS = df$VXAPLCLS
+VXAZNCLS = df$VXAZNCLS
+VXGOGCLS = df$VXGOGCLS 
+GOOG.Close = df$GOOG.Close
+AMZN.Close = df$AMZN.Close
+GSPC.Close = df$GSPC.Close 
+Date = df$Date
+AAPL.Ret = df$AAPL.Ret
+AMZN.Ret = df$AMZN.Ret
+GOOG.Ret = df$GOOG.Ret
+GSPC.Ret = df$GSPC.Ret
+AAPL.Vol = df$AAPL.Vol
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+m = cov(cbind(AAPL.PVol,GOOG.PVol,AMZN.PVol,GSPC.PVol, 
+          VIX.Close, AAPL.Close, VXAPLCLS, VXAZNCLS, 
+          VXGOGCLS, GOOG.Close, AMZN.Close, GSPC.Close,
+          Date, AAPL.Ret, AMZN.Ret, GOOG.Ret, GSPC.Ret, AAPL.Vol))
+ans <- data.frame(row=rownames(m)[row(m)], col=colnames(m)[col(m)], corr=c(m)) %>% filter(col == 'AAPL.Vol')
+write.csv(ans, "./cov.csv", row.names = FALSE)
+ans
+```
+
+## **Looking at correlation between variables**
+
+```{r}
+corr_matrix = cbind(AAPL.PVol, GOOG.PVol,AMZN.PVol,GSPC.PVol,  AAPL.Close, GOOG.Close, AMZN.Close, GSPC.Close, AAPL.Ret, GOOG.Ret, AMZN.Ret, GSPC.Ret, VXAPLCLS, VXGOGCLS, VXAZNCLS, VIX.Close, AAPL.Vol, Date)
+corr_matrix = cor(corr_matrix, method = c("pearson"))
+corrplot(corr_matrix, method="color")
+```
+
+## **Looking at Apple.Volatility vs Apple.PVolatility**
+
+```{r}
+# Fitting a simple linear regression model for AAPL.Vol and 
+# each independent variable, and checking the five key
+# assumptions: Linear relationship, Multivariate normality, 
+# No multicollinearity, No auto-correlation and Homoscedasticity, 
+# the assumptions of the simple linear regression are acceptable.
+summary(lm(AAPL.Vol~AAPL.PVol))
+```
+
+```{r}
+plot(AAPL.PVol,AAPL.Vol)
+abline(lm(AAPL.Vol~AAPL.PVol))
+```
+
+```{r}
+plot(lm(AAPL.Vol ~ AAPL.PVol))
+```
+
+```{r}
+X = exp(AAPL.PVol)
+Y = AAPL.Vol
+summary(lm(Y ~ X))
+mod = lm(formula = Y ~ X)
+plot(X, Y)
+abline(mod)
+plot(lm(Y~X))
+```
+
+## **Looking at Apple.Volatility vs Google.PVolatility**
+
+```{r}
+summary(lm(AAPL.Vol~GOOG.PVol))
+```
+
+```{r}
+plot(GOOG.PVol, AAPL.Vol)
+abline(lm(AAPL.Vol~GOOG.PVol))
+```
+
+```{r}
+plot(lm(AAPL.Vol~GOOG.PVol))
+```
+
+WOrking to transform data
+
+```{r}
+X = GOOG.PVol^3
+Y = AAPL.Vol
+summary(lm(Y ~ X))
+mod = lm(formula = Y ~ X)
+plot(X, Y)
+abline(mod)
+plot(lm(Y~X))
+```
+
+## **Looking at Apple.Volatility vs Amazon.PVolatility**
+
+```{r}
+summary(lm(AAPL.Vol~AMZN.PVol))
+```
+
+```{r}
+plot(AMZN.PVol,AAPL.Vol)
+abline(lm(AAPL.Vol~AMZN.PVol))
+```
+
+```{r}
+plot(lm(AAPL.Vol~AMZN.PVol))
+```
+
+```{r}
+X = 1/AMZN.PVol
+Y = AAPL.Vol
+summary(lm(Y ~ X))
+mod = lm(formula = Y ~ X)
+plot(X, Y)
+abline(mod)
+plot(lm(Y~X))
+```
+
+## **Looking at Apple.Volatility vs GSPC.PVol**
+
+```{r}
+summary(lm(AAPL.Vol~GSPC.PVol))
+```
+
+```{r}
+plot(GSPC.PVol, AAPL.Vol)
+abline(lm(AAPL.Vol~GSPC.PVol))
+```
+
+```{r}
+plot(lm(AAPL.Vol~GSPC.PVol))
+```
+
+```{r}
+X = GSPC.PVol^2
+Y = AAPL.Vol
+summary(lm(Y ~ X))
+mod = lm(formula = Y ~ X)
+plot(X, Y)
+abline(mod)
+plot(lm(Y~X))
+```
+
+# Closing Prices
+
+#### A. Appl.Vol vs AAPL.Close
+
+```{r}
+summary(lm(AAPL.Vol~AAPL.Close))
+plot(AAPL.Vol~AAPL.Close)
+abline(lm(AAPL.Vol~AAPL.Close))
+# plot(AAPL.Close, lm(AAPL.Vol~AAPL.Close)$residuals)
+plot(lm(AAPL.Vol~AAPL.Close))
+```
+
+#### B. Appl.Vol vs GOOG.Close
+
+```{r}
+summary(lm(AAPL.Vol~GOOG.Close))
+plot(AAPL.Vol~GOOG.Close)
+abline(lm(AAPL.Vol~GOOG.Close))
+#plot(GOOG.Close, lm(AAPL.Vol~GOOG.Close)$residuals)
+plot(lm(AAPL.Vol~GOOG.Close))
+```
+
+#### C. Appl.Vol vs AMZN.Close
+
+```{r}
+summary(lm(AAPL.Vol~AMZN.Close))
+plot(AAPL.Vol~AMZN.Close)
+abline(lm(AAPL.Vol~AMZN.Close))
+# plot(AMZN.Close, lm(AAPL.Vol~AMZN.Close)$residuals)
+plot(lm(AAPL.Vol~AMZN.Close))
+```
+
+#### D. Appl.Vol vs GSPC.Close
+
+```{r}
+summary(lm(AAPL.Vol~GSPC.Close))
+plot(AAPL.Vol~GSPC.Close)
+abline(lm(AAPL.Vol~GSPC.Close))
+# plot(GSPC.Close, lm(AAPL.Vol~GSPC.Close)$residuals)
+plot(lm(AAPL.Vol~GSPC.Close))
+```
+
+# **VIX**
+
+#### A. Appl.Vol vs. VXAPLCLS
+
+```{r}
+summary(lm(AAPL.Vol~VXAPLCLS))
+plot(AAPL.Vol~VXAPLCLS)
+abline(lm(AAPL.Vol~VXAPLCLS))
+# plot(VXAPLCLS, lm(AAPL.Vol~VXAPLCLS)$residuals)
+plot(lm(AAPL.Vol~VXAPLCLS))
+```
+
+#### B. Appl.Vol vs. VXGOGCLS
+
+```{r}
+summary(lm(AAPL.Vol~VXGOGCLS))
+plot(AAPL.Vol~VXGOGCLS)
+abline(lm(AAPL.Vol~VXGOGCLS))
+# plot(VXGOGCLS, lm(AAPL.Vol~VXGOGCLS)$residuals)
+plot(lm(AAPL.Vol~VXGOGCLS))
+```
+
+#### C. Appl.Vol vs. VXAZNCLS
+
+```{r}
+summary(lm(AAPL.Vol~VXAZNCLS))
+plot(AAPL.Vol~VXAZNCLS)
+abline(lm(AAPL.Vol~VXAZNCLS))
+# plot(VXAZNCLS, lm(AAPL.Vol~VXAZNCLS)$residuals)
+plot(lm(AAPL.Vol~VXAZNCLS))
+```
+
+#### D. Appl.Vol vs. VIX.Close
+
+```{r}
+summary(lm(AAPL.Vol~VIX.Close))
+plot(AAPL.Vol~VIX.Close)
+abline(lm(AAPL.Vol~VIX.Close))
+# plot(VIX.Close, lm(AAPL.Vol~VIX.Close)$residuals)
+plot(lm(AAPL.Vol~VIX.Close))
+```
+
+# Date
+
+```{r}
+summary(lm(AAPL.Vol~Date))
+plot(AAPL.Vol~Date)
+abline(lm(AAPL.Vol~Date))
+# plot(VXAZNCLS, lm(AAPL.Vol~VXAZNCLS)$residuals)
+plot(lm(AAPL.Vol~Date))
+```
+
+```{r}
+X = Date^2
+Y = AAPL.Vol
+summary(lm(Y ~ X))
+mod = lm(formula = Y ~ X)
+plot(X, Y)
+abline(mod)
+plot(lm(Y~X))
+```
+
+# Confidence Intervals Analysis
+
+Beta1 hypothesis tests for linearity
+
+Null Hypothesis: Beta1 = 0; no relation between X and Y
+
+Construct a 95% Confidence Interval for the value of Beta1
+
+If the interval contains zero, then there is no linear relation
+
+```{r}
+mod <- lm(AAPL.Vol ~ AAPL.PVol)
+CI_b11 = confint(mod)[2,]
+CI_b11
+
+mod <- lm(AAPL.Vol ~ AMZN.PVol)
+CI_b12 = confint(mod)[2,]
+CI_b12
+
+mod <- lm(AAPL.Vol ~ GOOG.PVol)
+CI_b13 = confint(mod)[2,]
+CI_b13
+
+mod <- lm(AAPL.Vol ~ GSPC.PVol)
+CI_b14 = confint(mod)[2,]
+CI_b14
+
+mod <- lm(AAPL.Vol ~ AAPL.Close)
+CI_b15 = confint(mod)[2,]
+CI_b15
+
+mod <- lm(AAPL.Vol ~ AMZN.Close)
+CI_b16 = confint(mod)[2,]
+CI_b16
+
+mod <- lm(AAPL.Vol ~ GOOG.Close)
+CI_b17 = confint(mod)[2,]
+CI_b17
+
+mod <- lm(AAPL.Vol ~ GSPC.Close)
+CI_b18 = confint(mod)[2,]
+CI_b18
+
+mod <- lm(AAPL.Vol ~ VXAPLCLS)
+CI_b19 = confint(mod)[2,]
+CI_b19
+
+mod <- lm(AAPL.Vol ~ VXAZNCLS)
+CI_b110 = confint(mod)[2,]
+CI_b110
+
+mod <- lm(AAPL.Vol ~ VXGOGCLS)
+CI_b111 = confint(mod)[2,]
+CI_b111
+
+mod <- lm(AAPL.Vol ~ VIX.Close)
+CI_b112 = confint(mod)[2,]
+CI_b112
+
+mod <- lm(AAPL.Vol ~ AAPL.Ret)
+CI_b113 = confint(mod)[2,]
+CI_b113
+
+mod <- lm(AAPL.Vol ~ AMZN.Ret)
+CI_b114 = confint(mod)[2,]
+CI_b114
+
+mod <- lm(AAPL.Vol ~ GOOG.Ret)
+CI_b115 = confint(mod)[2,]
+CI_b115
+
+mod <- lm(AAPL.Vol ~ GSPC.Ret)
+CI_b116 = confint(mod)[2,]
+CI_b116
+```
+
+Although the beta1 value for several of the linear regressions was very close to zero, the only variable for which we can be statistically certain has NO linear relation with AAPL.Vol is GOOG.Ret.
+
+Pvol predictors have positive linear relation. Close predictors have negative linear relation with slope very close to zero. VIX predictors have a positive linear relation with slope very close to zero. Return variables have mostly negative relations, but GOOG.Ret has no linear relation with AAPL.Vol.
+
+# Francis' Closing & VIX Transformation Analysis
+
+The same transformations of using logarithmic transform also works very well to better serve our linear model. the results are much more normal than without a transform.
+
+```{r}
+c <- lm(AAPL.Vol ~ VXGOGCLS)
+
+d <- lm(log(AAPL.Vol) ~ VXGOGCLS)
+
+### Some transforms of Appl Volitility vs Google Close
+
+#par(mfrow=c(2,2)) # <- Remove this line if you want graphs not grouped
+plot(VXGOGCLS, resid(c), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "VXGOGCLS", ylab = "Residuals", main = "VIX GOOG versus Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(VXGOGCLS, resid(d), col = alpha("grey36", 0.5), pch = 20,
+     xlab = "VXGOGCLS", ylab = "Log of Residuals", main = "VIX GOOG versus Sqrt Appl Vol Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+
+plot(c, which = 1)
+plot(d, which = 1)
+```
+
+Conclusion: Using a logarithmic transformation upon our VIX variables in our models would be better to show a much more linear relationship between our data.
