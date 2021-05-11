@@ -1,0 +1,104 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+rm(list=ls())
+library(corrplot)
+df <- read.csv(file="./volatility.csv")
+head(df)
+
+
+AAPL.PVol = df$AAPL.PVol
+GOOG.PVol = df$GOOG.PVol
+AMZN.PVol = df$AMZN.PVol
+GSPC.PVol = df$GSPC.PVol
+VIX.Close = df$VIX.Close
+AAPL.Close = df$AAPL.Close
+VXAPLCLS = df$VXAPLCLS
+VXAZNCLS = df$VXAZNCLS
+VXGOGCLS = df$VXGOGCLS 
+GOOG.Close = df$GOOG.Close
+AMZN.Close = df$AMZN.Close
+GSPC.Close = df$GSPC.Close 
+Date = df$Date
+AAPL.Ret = df$AAPL.Ret
+AMZN.Ret = df$AMZN.Ret
+GOOG.Ret = df$GOOG.Ret
+GSPC.Ret = df$GSPC.Ret
+AAPL.Vol = df$AAPL.Vol
+```
+
+```{r}
+library("olsrr")
+
+
+#uncentered vars
+AMZN.Close2 <- AMZN.Close^2
+AMZN.Close3 <- AMZN.Close^3
+GSPC.Close2 <- GSPC.Close^2
+GSPC.Close3 <- GSPC.Close^3
+AMZN.PVol2 <- AMZN.PVol^2
+GOOG.PVol4 <- GOOG.PVol^4
+Date2<-Date^2
+GOOG.PVol2 <- GOOG.PVol^2
+GOOG.PVol3 <- GOOG.PVol^3
+GSPC.PVol2 <- GSPC.PVol^2
+GSPC.PVol3 <- GSPC.PVol^3
+GSPC.PVol4 <- GSPC.PVol^4
+GSPC.PVol5 <- GSPC.PVol^5
+GSPC.PVol6 <- GSPC.PVol^6
+GSPC.Close2 <- GSPC.Close^2
+GSPC.Close3 <- GSPC.Close^3
+
+theresa <- AAPL.Vol~VXAPLCLS+I(GOOG.PVol*AMZN.PVol)+Date+Date2+AMZN.PVol2+GOOG.PVol2+GSPC.Close+VXAZNCLS+GSPC.PVol
+
+combo_mod <- lm(theresa)
+```
+
+```{r}
+summary(combo_mod)
+anova(combo_mod)
+confint(combo_mod)
+```
+
+```{r}
+data = df %>% mutate(AMZN.PVol2, AMZN.Close2, GSPC.Close2, AMZN.Close3, GSPC.Close3, GSPC.PVol2, GSPC.PVol3, GSPC.PVol4, GSPC.PVol5, GOOG.PVol2, GOOG.PVol3, GOOG.PVol4, GSPC.PVol6, Date2)
+
+final_infl2 <- ols_plot_cooksd_bar(combo_mod) #combo mod is lm(theresa); It makes a plot, you can ignore
+temps <- filter(final_infl2$data, cd >= 0.02)
+final_filter <- data[-c(temps$obs),] #removes influential terms
+final_modified <- lm(theresa, data = final_filter)
+```
+
+```{r}
+summary(final_modified)
+anova(final_modified)
+confint(final_modified)
+```
+
+```{r}
+library(tidyverse)
+library(caret)
+
+data = df %>% mutate(AMZN.PVol2, AMZN.Close2, GSPC.Close2, AMZN.Close3, GSPC.Close3, GSPC.PVol2, GSPC.PVol3, GSPC.PVol4, GSPC.PVol5, GOOG.PVol2, GOOG.PVol3, GOOG.PVol4, GSPC.PVol6, Date2)
+
+set.seed(125) 
+
+# defining training control as
+# repeated cross-validation and 
+# value of K is 10 and repetation is 3 times
+train_control <- trainControl(method = "repeatedcv", 
+                              number = 10, repeats = 20)
+
+# training the model by assigning sales column
+# as target variable and rest other column
+# as independent varaible
+model <- train(theresa, data=final_filter, method = "lm", trControl = train_control)
+
+# printing model performance metrics
+# along with other details
+model
+summary(model)
+```

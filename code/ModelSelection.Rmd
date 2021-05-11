@@ -1,0 +1,59 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code.
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*.
+
+```{r}
+rm(list=ls())
+library(corrplot)
+df <- read.csv(file="./volatility.csv")
+head(df)
+
+
+AAPL.PVol = df$AAPL.PVol
+GOOG.PVol = df$GOOG.PVol
+AMZN.PVol = df$AMZN.PVol
+GSPC.PVol = df$GSPC.PVol
+VIX.Close = df$VIX.Close
+AAPL.Close = df$AAPL.Close
+VXAPLCLS = df$VXAPLCLS
+VXAZNCLS = df$VXAZNCLS
+VXGOGCLS = df$VXGOGCLS 
+GOOG.Close = df$GOOG.Close
+AMZN.Close = df$AMZN.Close
+GSPC.Close = df$GSPC.Close 
+Date = df$Date
+AAPL.Ret = df$AAPL.Ret
+AMZN.Ret = df$AMZN.Ret
+GOOG.Ret = df$GOOG.Ret
+GSPC.Ret = df$GSPC.Ret
+AAPL.Vol = df$AAPL.Vol
+```
+
+## Forward Regression
+
+```{r}
+mod <- lm(AAPL.Vol~AAPL.Close+AMZN.Close+GOOG.Close+GSPC.Close+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol+AAPL.Ret+AMZN.Ret+GOOG.Ret+GSPC.Ret+VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close+Date, data=df)
+forward <- ols_step_forward_p(mod)
+plot(forward)
+```
+
+## Backward Regression
+
+```{r}
+backward <- ols_step_backward_p(mod)
+backward
+```
+
+## Stepwise Regression
+
+Build regression model from a set of candidate predictor variables by entering and removing predictors based on p values, in a stepwise manner until there is no variable left to enter or remove any more. The model should include all the candidate predictor variables. If details is set to `TRUE`, each step is displayed.
+
+```{r}
+ols_step_both_p(mod)
+plot(ols_step_both_p(mod))
+```

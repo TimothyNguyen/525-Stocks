@@ -1,0 +1,405 @@
+---
+title: "IE 3"
+author: "Francis Eshun"
+date: "4/22/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+rm(list=ls())
+#setwd("/Users/francis/Downloads/Stat 525/525-Stocks-master")
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+library(MASS)
+#install.packages("olsrr")
+library("olsrr")
+
+df <- read.csv("./volatility.csv")
+
+AAPL.PVol = df$AAPL.PVol
+GOOG.PVol = df$GOOG.PVol
+AMZN.PVol = df$AMZN.PVol
+GSPC.PVol = df$GSPC.PVol
+VIX.Close = df$VIX.Close
+AAPL.Close = df$AAPL.Close
+VXAPLCLS = df$VXAPLCLS
+VXAZNCLS = df$VXAZNCLS
+VXGOGCLS = df$VXGOGCLS 
+GOOG.Close = df$GOOG.Close
+AMZN.Close = df$AMZN.Close
+GSPC.Close = df$GSPC.Close 
+Date = df$Date
+AAPL.Ret = df$AAPL.Ret
+AMZN.Ret = df$AMZN.Ret
+GOOG.Ret = df$GOOG.Ret
+GSPC.Ret = df$GSPC.Ret
+AAPL.Vol = df$AAPL.Vol
+Date2 = df$Date^2
+
+AMZN.PVol2 = df$AMZN.PVol^2
+GOOG.PVol2 = df$GOOG.PVol^2
+GOOG.PVolGSPC.PVolAMZN.PVol = GOOG.PVol*GSPC.PVol*AMZN.PVol
+AMZN.Close2 <- AMZN.Close^2
+AMZN.Close3 <- AMZN.Close^3
+GSPC.Close2 <- GSPC.Close^2
+GSPC.Close3 <- GSPC.Close^3
+AMZN.PVol2 <- AMZN.PVol^2
+GOOG.PVol4 <- GOOG.PVol^4
+Date2<-Date^2
+GOOG.PVol2 <- GOOG.PVol^2
+GOOG.PVol3 <- GOOG.PVol^3
+GSPC.PVol2 <- GSPC.PVol^2
+GSPC.PVol3 <- GSPC.PVol^3
+GSPC.PVol4 <- GSPC.PVol^4
+GSPC.PVol5 <- GSPC.PVol^5
+GSPC.PVol6 <- GSPC.PVol^6
+GSPC.Close2 <- GSPC.Close^2
+GSPC.Close3 <- GSPC.Close^3
+
+```
+
+### Outlier and influence analysis contains a lot of preliminary models for final model. Final Model is at the bottom
+
+Here is the studentized residuals for Model 1. This is from our best subset model from all variables, which gives us VXAMZN as our best model for Apple volatility.
+
+```{r}
+best_subset_model <- lm(AAPL.Vol ~ VXAZNCLS)
+stud_resids <- studres(best_subset_model)
+plot(stud_resids)
+abline(h = 0, col = "darkorange", lwd = 2)
+abline(h = 3, col = "red", lwd = 2)
+plot(dffits(best_subset_model))
+abline(h = 0, col = "darkorange", lwd = 2)
+```
+
+From our best model subset model which only includes the Amazon VIX close, we can see that there are only 2 outlying points above 3, from out studentized residuals. Looking at our DFFIT's we can see that though they are outliers, they do not have much relative influence upon the model.
+
+Our next model has to do with our forward and backstep regression models which both produced the same output. They gave us the model of all the VIX and Pvol predictors, while removing the GoogleVIX predictor. We can analyse and see:
+
+```{r}
+for_back_model <- lm(AAPL.Vol ~ VXAPLCLS+VXAZNCLS+VIX.Close+AMZN.PVol+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol, data=df)
+stud_resids <- studres(for_back_model)
+plot(stud_resids)
+abline(h = 0, col = "darkorange", lwd = 2)
+abline(h = 3, col = "red", lwd = 2)
+plot(dffits(for_back_model))
+abline(h = 0, col = "darkorange", lwd = 2)
+```
+
+We can observe that there were only a handfull of ourliers in this model. When we look at our DFFIT values, we see that we have one point that looks to have quite a substantial influence, compared to the rest of our DFFIT values with a value of 0.06.
+
+And lastly for For our third model, we created a model consisting of the most correlated values in our correlation matrix for looking at Appl volitility, and performed a stepwise selection model based on those predictors. Our analysis is as follows:
+
+```{r}
+corr_step_model <- lm(AAPL.Vol ~ VXAPLCLS+VXAZNCLS+VIX.Close, data=df)
+stud_resids <- studres(corr_step_model)
+plot(stud_resids)
+abline(h = 0, col = "darkorange", lwd = 2)
+abline(h = 3, col = "red", lwd = 2)
+plot(dffits(corr_step_model))
+abline(h = 0, col = "darkorange", lwd = 2)
+plot(cooks.distance(corr_step_model))
+abline(h = 0, col = "darkorange", lwd = 2)
+ols_plot_resid_stud(corr_step_model)
+ols_plot_resid_lev(corr_step_model)
+```
+
+From our analysis, it appears that there are only a handful of outlying variables in our studentized residuals. For our DFFIT's, it appears that these ourlying variable have little influence at all in our model. AMZN close, amzn vix,
+
+```{r}
+best_model <- lm(AAPL.Vol ~ AMZN.PVol+GOOG.PVol+GSPC.PVol+AMZN.Close+GSPC.Close+VXAPLCLS+VXAZNCLS)
+stud_resids <- studres(best_model)
+plot(stud_resids)
+abline(h = 0, col = "darkorange", lwd = 2)
+abline(h = 3, col = "red", lwd = 2)
+plot(dffits(best_model))
+abline(h = 0, col = "darkorange", lwd = 2)
+plot(cooks.distance(best_model))
+abline(h = 0, col = "darkorange", lwd = 2)
+```
+
+## Testing for outliers and influence in our models
+
+### Stepwise p-model
+
+For out first model we have the stepwise p model, which gives us the analysis:
+
+```{r}
+mod1 <- lm(AAPL.Vol ~ VXAZNCLS + AMZN.Close + VXAPLCLS+VIX.Close+GOOG.PVol+GSPC.PVol+GSPC.Close+AMZN.PVol
+           +AAPL.PVol+AMZN.Ret+GSPC.Ret)
+summary(mod1)
+mod1_outliers<-ols_plot_resid_stud(mod1)
+mod1_infl1 <-ols_plot_dffits(mod1)
+mod1_infl2 <- ols_plot_cooksd_bar(mod1)
+mod1_betas <- ols_plot_dfbetas(mod1)
+mod1_betas
+
+
+```
+
+From our analysis of the stepwise p model, we can observe that there are no ourliers on our studentized deleted residual graph, as none of its values, are above the given threshold of 3 for an acceptable bounds. For our influential analysis, we can observe by our DFFITS and Cooks distance and DFBETAs, that there seem to be some influential values in our model above our threshold. Though these analysis show us of influencial points, does not necessarily mean that they are to be removed, but we can try to remove them and see how they affect our model. We set a threshold for cook distance values over 0.02 to see how the deleted values would affect our stepwise model.
+
+```{r}
+temps <- filter(mod1_infl2$data, cd >= 0.02)
+mod1_filter <- df[-c(temps$obs),]
+mod1_modified <- lm(AAPL.Vol ~ VXAZNCLS + AMZN.Close + 
+                      VXAPLCLS+VIX.Close+GOOG.PVol+GSPC.PVol+GSPC.Close+AMZN.PVol
+                    +AAPL.PVol+AMZN.Ret+GSPC.Ret, data = mod1_filter)
+ols_plot_cooksd_bar(mod1_modified)
+summary(mod1_modified)
+```
+
+Removing the influential points moved our R\^2 value from .58 -\> .60 , up by 0.02. This did not make any meaningful impact in our overall model.
+
+Conclusion: Not much of a difference by removing influencial points + no outliers.
+
+### Backwards Elimination AIC model
+
+Next is our Backwards Elimination AIC model.
+
+```{r}
+mod2 <- lm(AAPL.Vol ~ VIX.Close + VXGOGCLS + AAPL.Ret + GOOG.Close + AAPL.Close + AMZN.Ret)
+summary(mod2)
+mod2_outliers<-ols_plot_resid_stud(mod2)
+mod2_infl1 <-ols_plot_dffits(mod2)
+mod2_infl2 <- ols_plot_cooksd_bar(mod2)
+mod2_betas <- ols_plot_dfbetas(mod2)
+mod2_betas
+
+```
+
+With our outliers in this model, there is none, according to our acceptable 3 threshold for our standardized residuals. Upon looking at our DFBETAS and Cooks distance influential terms we can see that almost all of the DFBETA influential terms are partly captured by the cooks distance outliers. We can do a test to see what happens when we remove these influential points in our model:
+
+```{r}
+temps <- filter(mod2_infl2$data, cd >= 0.02)
+mod2_filter <- df[-c(temps$obs),]
+mod2_modified <- lm(AAPL.Vol ~ VIX.Close + VXGOGCLS + AAPL.Ret + GOOG.Close + AAPL.Close + AMZN.Ret, 
+                    data = mod2_filter)
+ols_plot_cooksd_bar(mod2_modified)
+summary(mod2_modified)
+```
+
+Again, removing the influential model terms in our model seemed to only slightly improve the fit of our model slightly, with an R\^2 of 0.462 -\> 0.4812, a slight improvement to our fit. But not substantial
+
+Conclusion: a slightly noticable improvement of a difference by removing influencial points + no outliers.
+
+### Preliminary Model
+
+Lastly, we have our preliminary model:
+
+```{r}
+mod3 <- lm(AAPL.Vol ~ VXAZNCLS + AMZN.Close + VXAPLCLS + GOOG.PVol + GSPC.PVol + GSPC.Close + AMZN.PVol
+           + AAPL.PVol+ GSPC.Ret)
+summary(mod3)
+mod3_outliers<-ols_plot_resid_stud(mod3)
+mod3_infl1 <-ols_plot_dffits(mod3)
+mod3_infl2 <- ols_plot_cooksd_bar(mod3)
+mod3_betas <- ols_plot_dfbetas(mod3)
+mod3_betas
+
+```
+
+```{r}
+temps <- filter(mod3_infl2$data, cd >= 0.02)
+mod3_filter <- df[-c(temps$obs),]
+mod3_modified <- lm(AAPL.Vol ~ VXAZNCLS + AMZN.Close + VXAPLCLS + GOOG.PVol + GSPC.PVol + GSPC.Close +
+                      AMZN.PVol + AAPL.PVol+ GSPC.Ret,
+                    data = mod3_filter)
+ols_plot_cooksd_bar(mod3_modified)
+summary(mod3_modified)
+```
+
+Conclusion: No outliers again. This indicates a very stable set of data in the stock market for apple volitility. After removing outliers, a slight improvement, by 0.02 R\^2 fit.
+
+########### Brea
+
+First model, Stepwise P model:
+
+```{r}
+best_model <- lm(AAPL.Vol ~AMZN.PVol+AMZN.PVol^2+GOOG.PVol+GOOG.PVol^2+GOOG.PVol^3+GSPC.PVol+ GSPC.PVol^2+GSPC.PVol^3+GSPC.PVol^4+GSPC.PVol^5+GSPC.PVol^6+AMZN.Close+GSPC.Close+GSPC.Close^2+GSPC.Close^3+VXAPLCLS+VXAZNCLS)
+summary(best_model)
+
+best_model2 <- lm(AAPL.Vol ~  VXAZNCLS + AMZN.Close + (AMZN.Close^3) + GSPC.Close + (GSPC.Close^3)  + (AMZN.PVol^2)  + (AMZN.PVol*GOOG.PVol^4))
+
+summary(best_model2)
+
+date_model <- lm(AAPL.Vol ~  Date + Date^2 +  VXAZNCLS + GSPC.Close^3  + AMZN.PVol^2  + AMZN.PVol*GOOG.PVol^4) 
+
+summary(date_model)
+#date_model <- lm(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol+ GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.PVol)
+
+combo_mod <- lm(AAPL.Vol ~ VXAPLCLS+AMZN.PVol+(GOOG.PVol*GSPC.PVol*AMZN.PVol)+Date+AMZN.PVol+I(AMZN.PVol^2)+GOOG.PVol+I(GOOG.PVol^2)+I(GOOG.PVol^3)+GSPC.PVol+ I(GSPC.PVol^2)+I(GSPC.PVol^3)+I(GSPC.PVol^4)+I(GSPC.PVol^5)+AMZN.Close+GSPC.Close+I(GSPC.Close^2)+I(GSPC.Close^3)+VXAZNCLS)
+f<- ols_step_backward_aic(combo_mod) 
+f
+summary(combo_mod)
+
+combo_mod2 <- lm(AAPL.Vol~VXAPLCLS+(GOOG.PVol*AMZN.PVol)+Date+AMZN.PVol+I(AMZN.PVol^2)+GOOG.PVol+I(GOOG.PVol^2)+I(GOOG.PVol^3)+GSPC.PVol+AMZN.Close+GSPC.Close+ I(GSPC.Close^2) +I(GSPC.Close^3)+VXAZNCLS)
+f<- ols_step_backward_aic(combo_mod2)
+f
+summary(combo_mod2)
+
+```
+
+```{r}
+actual_best_model <- lm(AAPL.Vol~VXAPLCLS+I(GOOG.PVol*GSPC.PVol*AMZN.PVol) +Date+I(Date^2)+AMZN.PVol+I(AMZN.PVol^2)+GOOG.PVol+I(GOOG.PVol^2)+I(GOOG.PVol^3)+I(GSPC.PVol^2)+I(GSPC.PVol^3)+I(GSPC.PVol^4)+I(GSPC.PVol^5)+AMZN.Close+GSPC.Close+I(GSPC.Close^2)+I(GSPC.Close^3)+VXAZNCLS)
+
+ggplot(data = df, mapping = aes(x=seq_along(AAPL.Vol), y=AAPL.Vol)) + 
+  geom_point() + geom_line(mapping = aes(x=seq_along(actual_best_model$fitted.values), y = actual_best_model$fitted.values), color="blue") + labs(x = "Predictor values for Best Model", y="Apple Volitility")
+ df2 <- df%>% arrange(AAPL.Vol)
+ #View(df2)
+ 
+actual_best_model2 <- lm(AAPL.Vol~VXAPLCLS+I(GOOG.PVol*GSPC.PVol*AMZN.PVol) +Date+I(Date^2)+AMZN.PVol+I(AMZN.PVol^2)+GOOG.PVol+I(GOOG.PVol^2)+I(GOOG.PVol^3)+I(GSPC.PVol^2)+I(GSPC.PVol^3)+I(GSPC.PVol^4)+I(GSPC.PVol^5)+AMZN.Close+GSPC.Close+I(GSPC.Close^2)+I(GSPC.Close^3)+VXAZNCLS, data = df2)
+
+ ggplot(data = df2, mapping = aes(x=seq_along(AAPL.Vol), y=AAPL.Vol)) + 
+  geom_point() + geom_line(data = df2, mapping = aes(x=seq_along(actual_best_model2$fitted.values), y = actual_best_model2$fitted.values), color="blue") + labs(x = "Predictor values for Best Model", y="Apple Volitility")
+ 
+#tests<-AAPL.Vol[1:5]$value
+#tests
+```
+
+### Observing influential terms on our Best Model
+
+```{r}
+summary(actual_best_model)
+mod4_outliers<-ols_plot_resid_stud(actual_best_model)
+mod4_infl1 <-ols_plot_dffits(actual_best_model)
+mod4_infl2 <- ols_plot_cooksd_bar(actual_best_model)
+mod4_betas <- ols_plot_dfbetas(actual_best_model)
+mod4_betas
+```
+
+```{r}
+temps <- filter(mod4_infl2$data, cd >= 0.02)
+mod4_filter <- df[-c(temps$obs),]
+df3 <- arrange(df[-c(temps$obs),], AAPL.Vol)
+mod4_modified <- lm(AAPL.Vol~VXAPLCLS+(GOOG.PVol*GSPC.PVol*AMZN.PVol)
+                    +Date+I(Date^2)+AMZN.PVol+I(AMZN.PVol^2)+GOOG.PVol+I(GOOG.PVol^2)+I(GOOG.PVol^3)+
+                      I(GSPC.PVol^2)+I(GSPC.PVol^3)+I(GSPC.PVol^4)+I(GSPC.PVol^5)+AMZN.Close+
+                      GSPC.Close+I(GSPC.Close^2)+I(GSPC.Close^3)+VXAZNCLS,
+                    data = df3)
+ols_plot_cooksd_bar(mod4_modified)
+summary(mod4_modified)
+
+
+
+ ggplot(data = df3, mapping = aes(x=seq_along(AAPL.Vol), y=AAPL.Vol)) + 
+  geom_point() + geom_line(data = df3, mapping = aes(x=seq_along(mod4_modified$fitted.values), y = mod4_modified$fitted.values), color="blue") + labs(x = "Predictor values for Best Model", y="Apple Volitility")
+```
+
+## Finally Tim's model:
+
+```{r}
+tim <- lm(AAPL.Vol ~ VXAPLCLS + VXAZNCLS + AMZN.PVol + (GOOG.PVol*GSPC.PVol*AMZN.PVol) + Date + I(Date^2) + I(AMZN.PVol^2) + GOOG.PVol + I(GOOG.PVol^2) + I(GOOG.PVol^3) + I(GSPC.PVol^5) + GSPC.Close, data = df2) 
+
+ggplot(data = df2, mapping = aes(x=seq_along(AAPL.Vol), y=AAPL.Vol)) + 
+  geom_point() + geom_line(data = df2, mapping = aes(x=seq_along(tim$fitted.values), y = tim$fitted.values), color="blue") + labs(x = "Predictor values for Best Model", y="Apple Volitility")
+
+```
+
+```{r}
+summary(tim)
+tim_outliers<-ols_plot_resid_stud(tim)
+tim_infl1 <-ols_plot_dffits(tim)
+tim_infl2 <- ols_plot_cooksd_bar(tim)
+tim_betas <- ols_plot_dfbetas(tim)
+tim_betas
+```
+
+```{r}
+temps <- filter(tim_infl2$data, cd >= 0.02)
+#df3 <- arrange(df[-c(temps$obs),], AAPL.Vol)
+df3 <- df[-c(temps$obs),]
+tim2 <- lm(AAPL.Vol ~ VXAPLCLS + VXAZNCLS + (GOOG.PVol*GSPC.PVol*AMZN.PVol) + Date + I(Date^2) + AMZN.PVol + I(AMZN.PVol^2) + GOOG.PVol + I(GOOG.PVol^2) + I(GOOG.PVol^3) + I(GSPC.PVol^5) + GSPC.Close, data = df3)
+
+ggplot(data = df3, mapping = aes(x=seq_along(AAPL.Vol), y=AAPL.Vol)) + 
+  geom_point() + geom_line(data = df3, mapping = aes(x=seq_along(tim2$fitted.values), y = tim2$fitted.values), color="blue") + labs(x = "Predictor values for Best Model", y="Apple Volitility")
+
+summary(tim2)
+```
+
+# Refined Theresa model without extreme higher order terms -- Final Model:
+
+```{r}
+theresa <- AAPL.Vol~VXAPLCLS+I(GOOG.PVol*AMZN.PVol)+Date+Date2+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GSPC.Close+GSPC.Close2+VXAZNCLS+GSPC.PVol
+
+combo_mod <- lm(theresa)
+
+summary(combo_mod)
+anova(combo_mod)
+
+library(tidyverse)
+#install.packages("caret")
+library(caret)
+data = df %>% mutate(AMZN.PVol2, AMZN.Close2, GSPC.Close2, AMZN.Close3, GSPC.Close3, GSPC.PVol2, GSPC.PVol3, GSPC.PVol4, GSPC.PVol5, GOOG.PVol2, GOOG.PVol3, GOOG.PVol4, GSPC.PVol6, Date2)
+
+set.seed(125) 
+
+# defining training control as
+# repeated cross-validation and 
+# value of K is 10 and repetation is 3 times
+train_control <- trainControl(method = "repeatedcv", 
+                              number = 10, repeats = 20)
+
+# training the model by assigning sales column
+# as target variable and rest other column
+# as independent varaible
+model <- train(theresa, data, method = "lm", trControl = train_control)
+
+# printing model performance metrics
+# along with other details
+model
+summary(model)
+MSPR=sum(summary(model)$residuals^2)/503
+MSPR
+```
+
+The final model we found (Theresa's Model) for predicting apple volatility. This final model includes the basic structure of tim's model. The new difference is that it removes the S&P 500 previous volatility from the interaction terms. We discovered that the interaction with S&P 500 previous volatility led to an overfitted model. With our new model, we recieve an $R^2$ value of 0.712 as well as a model training fit that is close to our $R^2$ value. We then check for outliers and influencial points:
+
+```{r}
+final_outliers<-ols_plot_resid_stud(combo_mod)
+final_infl1 <-ols_plot_dffits(combo_mod)
+final_infl2 <- ols_plot_cooksd_bar(combo_mod)
+final_betas <- ols_plot_dfbetas(combo_mod)
+final_betas
+```
+
+From observing our Deleted studentized residuals, we observed that none of the data points in our model stood out as an outlier. Upon observing our DFFITS and our DFBETA's we observed many influential points in our data. This was more clear in our Cooks distance plots as it was easier to see overall how our response variable fared against all variables in a single direction as opposed to the opposing directions in our DFFITS plots. From observing our Cooks distance plots, we can see that none of the data points are above a value of 0.05, which means that its reasonable to justify that there are no overly influential points in our model. We also observed that the large majority of influential terms in our DFBETAS were the same data points for our influential outlying points in our Cook distance plot. For the purpose to testing, we remove the influential points that are \> 0.02 see observe how much influence they can indeed have on our model. Our threshold of 0.02 was chosen in order to account for the influential DFBETA points and, see how it affects our model's $R^2$ value. We have:
+
+```{r}
+temps <- filter(final_infl2$data, cd >= 0.02)
+final_filter <- data[-c(temps$obs),]
+#df3 <- arrange(df[-c(temps$obs),], AAPL.Vol)
+final_modified <- lm(theresa, data = final_filter)
+ols_plot_cooksd_bar(final_modified)
+summary(final_modified)
+```
+
+```{r}
+#Technically Tim's part but copied and pasted to fit without 
+summary(final_modified)
+anova(final_modified)
+
+
+set.seed(125) 
+
+# defining training control as
+# repeated cross-validation and 
+# value of K is 10 and repetation is 3 times
+train_control <- trainControl(method = "repeatedcv", 
+                              number = 10, repeats = 20)
+
+# training the model by assigning sales column
+# as target variable and rest other column
+# as independent varaible
+model <- train(theresa, final_filter, method = "lm", trControl = train_control)
+
+# printing model performance metrics
+# along with other details
+model
+summary(model)
+MSPR=sum(summary(model)$residuals^2)/499
+MSPR
+```
+
+From our analysis of influential points, we are able to observe 4 very influential points in our model. Removing these 4 points gave us a newer $R^2$ value of 0.7248. This is a better fit for our model. Doing model verification we can check whether our model is valid or overfitted.

@@ -139,11 +139,20 @@ plot(sub)
 View(sub)
 ```
 
-Forward Regression:
+## Forward Regression
 
 ```{r}
+mod <- lm(AAPL.Vol~AAPL.Close+AMZN.Close+GOOG.Close+GSPC.Close+AAPL.PVol+AMZN.PVol+GOOG.PVol+GSPC.PVol+AAPL.Ret+AMZN.Ret+GOOG.Ret+GSPC.Ret+VXAPLCLS+VXAZNCLS+VXGOGCLS+VIX.Close+Date, data=df)
 forward <- ols_step_forward_p(mod)
-plot(forward)
+forward[1]
+#plot(forward)
+```
+
+## Backward Regression
+
+```{r}
+backward <- ols_step_backward_p(mod)
+backward
 ```
 
 ## Stepwise Regression
@@ -394,7 +403,7 @@ GSPC.PVol5 <- GSPC.PVol^5
 GSPC.PVol6 <- GSPC.PVol^6
 GSPC.Close2 <- GSPC.Close^2
 GSPC.Close3 <- GSPC.Close^3
-interactterm = GOOG.PVol*GSPC.PVol*AMZN.PVol 
+interactterm = GOOG.PVol*AMZN.PVol 
 
 #best_model <- lm(AAPL.Vol ~  VXAZNCLS + AMZN.Close + (AMZN.Close3) + GSPC.Close + (GSPC.Close3)  + (AMZN.PVol2)  + (AMZN.PVol*GOOG.PVol4))
 
@@ -404,15 +413,20 @@ best_model <- lm(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+
 #date_model <- lm(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol+ GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.PVol6+AMZN.Close+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS+Date+Date2)
 date_model <- lm(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+ GSPC.PVol2+GSPC.PVol3+GSPC.PVol5+GSPC.PVol6+AMZN.Close+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS+Date+Date2)
 
-lekha <- AAPL.Vol~VXAPLCLS+AMZN.PVol+(GOOG.PVol*GSPC.PVol*AMZN.PVol )+Date+Date2+AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAZNCLS
-theresa <- AAPL.Vol~VXAPLCLS+(GOOG.PVol*AMZN.PVol)+Date+Date2+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAZNCLS
+lekha <- AAPL.Vol~VXAPLCLS+AMZN.PVol+I(GOOG.PVol*AMZN.PVol )+Date+Date2+AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol2+GSPC.PVol3+GSPC.PVol4+GSPC.PVol5+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAZNCLS
+theresa <- AAPL.Vol~VXAPLCLS+I(GOOG.PVol*AMZN.PVol)+Date+Date2+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GSPC.Close+GSPC.Close2+VXAZNCLS+GSPC.PVol
 
-tim <- AAPL.Vol~VXAPLCLS+AMZN.PVol+(GOOG.PVol*GSPC.PVol*AMZN.PVol )+Date+Date2+AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol5+GSPC.Close+VXAZNCLS
+#tim <- AAPL.Vol~VXAPLCLS+(GOOG.PVol*GSPC.PVol*AMZN.PVol )+Date+Date2+AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+GSPC.PVol5+GSPC.Close+VXAZNCLS
 
+#tim <- AAPL.Vol~VXAPLCLS+(GOOG.PVol*GSPC.PVol*AMZN.PVol )+Date+Date2+AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GSPC.Close+VXAZNCLS
 
-#combo_mod <- lm(theresa)
+#hi <- AAPL.Vol~VXAPLCLS+(interactterm)+Date+Date2+AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GSPC.Close+VXAZNCLS
+
+combo_mod <- lm(theresa)
 #combo_mod <- lm(lekha)
-combo_mod <- lm(tim)
+#combo_mod <- lm(tim)
+#combo_mod <- lm(hi)
+
 summary(combo_mod)
 ```
 
@@ -439,9 +453,9 @@ train_control <- trainControl(method = "repeatedcv",
 # as independent varaible
 #model <- train(AAPL.Vol ~AMZN.PVol+AMZN.PVol2+GOOG.PVol+GOOG.PVol2+GOOG.PVol3+ GSPC.PVol2+GSPC.PVol3+GSPC.PVol5+GSPC.PVol6+AMZN.Close+GSPC.Close+GSPC.Close2+GSPC.Close3+VXAPLCLS+VXAZNCLS+Date+Date2, data, method = "lm", trControl = train_control)
 
-#model <- train(lekha, data, method = "lm", trControl = train_control)
+model <- train(theresa, data, method = "lm", trControl = train_control)
 #model = train(theresa, data, method = "lm", trControl = train_control)
-model <- train(tim, data, method = "lm", trControl = train_control)
+#model <- train(hi, data, method = "lm", trControl = train_control)
 
 # printing model performance metrics
 # along with other details
