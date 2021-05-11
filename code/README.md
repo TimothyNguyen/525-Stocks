@@ -1,6 +1,6 @@
 Notes:
 
-Prelim.Rmd: The preliminary models (section 1 of the report) is located here. All selected single variable analysis used in the report is locaated here
+Prelim.Rmd: The preliminary models (section 1 of the report) is located here. All selected single variable analysis used in the report is located here
 
 ModelSelection.Rmd: The file is where we select the initial model through forward, backward, and stepwise selection.
 
